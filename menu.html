@@ -375,7 +375,7 @@
             }
 
             try {
-                const response = await fetch('https://themdashraful2207.github.io/civilapp/credentials.json');
+                const response = await fetch('./credentials.json');
                 if (!response.ok) throw new Error("Credentials file not found");
                 const data = await response.json();
                 
@@ -461,7 +461,7 @@
 
         // Register service worker
         if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('/civilapp/sw.js')
+            navigator.serviceWorker.register('./sw.js')
                 .then(() => console.log('Service Worker Registered'))
                 .catch(err => console.error('Service Worker Error:', err));
         }
