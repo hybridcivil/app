@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Staircase Material Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        .container {
+            width: 100%;
+            max-width: 600px;
+            background: #ffffff;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        h2 {
+            text-align: center;
+            color: #2c3e50;
+            margin-bottom: 25px;
+            font-size: clamp(20px, 5vw, 28px);
+        }
+        .input-section {
+            margin-bottom: 25px;
+        }
+        label {
+            font-weight: 600;
+            display: block;
+            margin: 12px 0 5px;
+            color: #34495e;
+            font-size: clamp(14px, 4vw, 16px);
+        }
+        input, select {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 2px solid #ddd;
+            border-radius: 6px;
+            font-size: clamp(12px, 3.5vw, 14px);
+            transition: border-color 0.3s;
+        }
+        input:focus, select:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .unit-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .unit-group input {
+            flex: 1;
+            min-width: 0;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background: #2ecc71;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: clamp(14px, 4vw, 16px);
+            cursor: pointer;
+            margin-top: 15px;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #27ae60;
+        }
+        .output-section {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.05);
+        }
+        .output-section h3 {
+            color: #2980b9;
+            margin: 0 0 15px;
+            text-align: center;
+            font-size: clamp(18px, 4.5vw, 22px);
+        }
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            margin: 8px 0;
+            background: #ffffff;
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+            font-size: clamp(12px, 3.5vw, 16px);
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+        .result-label {
+            color: #7f8c8d;
+            font-weight: 600;
+            flex: 1;
+        }
+        .result-value {
+            color: #e74c3c;
+            font-weight: 700;
+        }
+        .result-unit {
+            color: #95a5a6;
+            font-weight: 500;
+            margin-left: 5px;
+        }
+
+        @media (max-width: 480px) {
+            body {
+                padding: 10px;
+            }
+            .container {
+                padding: 15px;
+            }
+            .unit-group {
+                flex-direction: column;
+                gap: 5px;
+            }
+            .result-item {
+                flex-direction: column;
+                align-items: flex-start;
+                padding: 8px;
+            }
+            .result-unit {
+                margin-left: 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Staircase Material Calculator</h2>
+        <div class="input-section">
+            <label>Concrete Mix Ratio:</label>
+            <select id="mixRatio">
+                <option value="1:1.5:3">1:1.5:3</option>
+                <option value="1:2:4">1:2:4</option>
+            </select>
+
+            <label>Length (feet & inches):</label>
+            <div class="unit-group">
+                <input type="number" id="lengthFeet" placeholder="Feet">
+                <input type="number" id="lengthInches" placeholder="Inches">
+            </div>
+
+            <label>Width (feet & inches):</label>
+            <div class="unit-group">
+                <input type="number" id="widthFeet" placeholder="Feet">
+                <input type="number" id="widthInches" placeholder="Inches">
+            </div>
+
+            <label>Thickness (inches):</label>
+            <input type="number" id="thickness" placeholder="Inches">
+
+            <label>Number of Risers:</label>
+            <input type="number" id="risers" placeholder="Count">
+
+            <label>Number of Treads:</label>
+            <input type="number" id="treads" placeholder="Count">
+
+            <label>Riser Height (inches):</label>
+            <input type="number" id="riserHeight" placeholder="Inches">
+
+            <label>Tread Width (inches):</label>
+            <input type="number" id="treadWidth" placeholder="Inches">
+
+            <label>Main Bar (mm) & Spacing (inches):</label>
+            <div class="unit-group">
+                <input type="number" id="mainBar" placeholder="Diameter (mm)">
+                <input type="number" id="mainSpacing" placeholder="Spacing (inches)">
+            </div>
+
+            <label>Distribution Bar (mm) & Spacing (inches):</label>
+            <div class="unit-group">
+                <input type="number" id="distBar" placeholder="Diameter (mm)">
+                <input type="number" id="distSpacing" placeholder="Spacing (inches)">
+            </div>
+
+            <button onclick="calculateMaterials()">Calculate Materials</button>
+        </div>
+
+        <div class="output-section">
+            <h3>Material Requirements</h3>
+            <div class="result-item">
+                <span class="result-label">Cement</span>
+                <span><span id="cement"></span><span class="result-unit">bags</span></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Sand</span>
+                <span><span id="sand"></span><span class="result-unit">CFT</span></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Aggregate</span>
+                <span><span id="aggregate"></span><span class="result-unit">CFT</span></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Main Steel</span>
+                <span><span id="steel12"></span><span class="result-unit">kg</span></span>
+            </div>
+            <div class="result-item">
+                <span class="result-label">Distribution Steel</span>
+                <span><span id="steel10"></span><span class="result-unit">kg</span></span>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateMaterials() {
+            // Get input values
+            const mixRatio = document.getElementById("mixRatio").value.split(":").map(Number);
+            const lengthFeet = parseFloat(document.getElementById("lengthFeet").value) || 0;
+            const lengthInches = parseFloat(document.getElementById("lengthInches").value) || 0;
+            const widthFeet = parseFloat(document.getElementById("widthFeet").value) || 0;
+            const widthInches = parseFloat(document.getElementById("widthInches").value) || 0;
+            const thickness = parseFloat(document.getElementById("thickness").value) || 0;
+            const risers = parseFloat(document.getElementById("risers").value) || 0;
+            const treads = parseFloat(document.getElementById("treads").value) || 0;
+            const riserHeight = parseFloat(document.getElementById("riserHeight").value) || 0;
+            const treadWidth = parseFloat(document.getElementById("treadWidth").value) || 0;
+            const mainBar = parseFloat(document.getElementById("mainBar").value) || 12;
+            const mainSpacing = parseFloat(document.getElementById("mainSpacing").value) || 5;
+            const distBar = parseFloat(document.getElementById("distBar").value) || 10;
+            const distSpacing = parseFloat(document.getElementById("distSpacing").value) || 5;
+
+            // Convert all measurements to feet
+            const length = lengthFeet + (lengthInches / 12);
+            const width = widthFeet + (widthInches / 12);
+            const thicknessFeet = thickness / 12;
+            const riserFeet = riserHeight / 12;
+            const treadFeet = treadWidth / 12;
+
+            // Calculate volumes
+            const volumeSlab = length * width * thicknessFeet;
+            const areaTreadRiser = (0.5 * treadFeet * riserFeet) * width * treads;
+            const totalVolume = volumeSlab + areaTreadRiser;
+            const finalVolume = totalVolume * 1.05; // 5% wastage
+            const dryVolume = finalVolume * 1.54; // Dry volume factor
+
+            // Calculate materials based on mix ratio
+            const ratioSum = mixRatio[0] + mixRatio[1] + mixRatio[2];
+            const cement = dryVolume / ratioSum;
+            const sand = cement * mixRatio[1];
+            const aggregate = cement * mixRatio[2];
+
+            // Calculate reinforcement
+            const lengthMeters = length * 0.3048; // feet to meters
+            const widthMeters = width * 0.3048;   // feet to meters
+            const mainSpacingMeters = mainSpacing / 12 * 0.3048; // inches to meters
+            const distSpacingMeters = distSpacing / 12 * 0.3048; // inches to meters
+            
+            // Calculate number of bars
+            const numMainBars = Math.ceil(length / (mainSpacing / 12)) + 1; // Along length
+            const numDistBars = Math.ceil(width / (distSpacing / 12)) + 1;  // Along width
+            
+            // Calculate total length of steel in meters
+            const totalLengthMain = numMainBars * widthMeters * 2;  // 2 layers
+            const totalLengthDist = numDistBars * lengthMeters * 2; // 2 layers
+            
+            // Steel weight calculation (kg)
+            const steel12 = (Math.pow(mainBar, 2) / 162) * totalLengthMain;
+            const steel10 = (Math.pow(distBar, 2) / 162) * totalLengthDist;
+
+            // Display results
+            document.getElementById("cement").innerText = Math.ceil(cement / 1.25);
+            document.getElementById("sand").innerText = Math.round(sand);
+            document.getElementById("aggregate").innerText = Math.round(aggregate);
+            document.getElementById("steel12").innerText = Math.round(steel12);
+            document.getElementById("steel10").innerText = Math.round(steel10);
+        }
+
+        // Prevent URL display on hover
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('mouseover', function(e) {
+            // Clear any existing status text
+            window.status = '';
+            return true;
+        });
+        
+        // Alternative method to prevent status bar changes
+        link.onmouseover = link.onmouseout = function() {
+            return true;
+        };
+    });
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Optional: Disable keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') e.preventDefault();
+    
+    // Disable Ctrl+Shift+I (Chrome, Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') e.preventDefault();
+    
+    // Disable Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') e.preventDefault();
+    
+    // Disable Ctrl+U (View source)
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+    </script>
+</body>
+</html>

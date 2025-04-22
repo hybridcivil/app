@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Septic Tank Estimate</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .result strong {
+            color: #007BFF;
+            font-weight: 600;
+        }
+
+        .highlight {
+            color: #dc3545; /* Red color for highlighted values */
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            input, button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Septic Tank Estimate Calculator</h2>
+        
+        <label for="floors">Number of Floors:</label>
+        <input type="number" id="floors" min="1" value="1">
+
+        <label for="units">Number of Units per Floor:</label>
+        <input type="number" id="units" min="1" value="1">
+
+        <label for="persons">Persons per Unit:</label>
+        <input type="number" id="persons" min="1" value="4">
+
+        <label for="waterUsage">Water Usage per Person (Liters):</label>
+        <input type="number" id="waterUsage" min="50" value="120">
+
+        <label for="retention">Retention Time (Days):</label>
+        <input type="number" id="retention" min="1" max="3" value="2">
+
+        <button onclick="calculateSepticTank()">Calculate</button>
+
+        <div class="result" id="output">
+            Enter values and click calculate to see results.
+        </div>
+    </div>
+
+    <script>
+        function calculateSepticTank() {
+            let floors = parseInt(document.getElementById("floors").value);
+            let units = parseInt(document.getElementById("units").value);
+            let persons = parseInt(document.getElementById("persons").value);
+            let waterUsage = parseInt(document.getElementById("waterUsage").value);
+            let retention = parseInt(document.getElementById("retention").value);
+            const output = document.getElementById("output");
+
+            if (floors < 1 || units < 1 || persons < 1 || waterUsage < 50 || retention < 1 || retention > 3) {
+                output.innerHTML = "Please enter valid values.";
+                output.style.color = "#dc3545";
+                return;
+            }
+
+            output.style.color = "#333";
+
+            let totalPersons = floors * units * persons;
+            let dailyWastewater = totalPersons * waterUsage;
+            let totalVolume = dailyWastewater * retention;
+
+            let height = 6; // Standard depth in feet
+            let width = Math.sqrt(totalVolume / (height * 7.48)); // Convert liters to cubic feet
+            let length = 1.5 * width;
+
+            let capacityDays = Math.round(totalVolume / dailyWastewater);
+
+            output.innerHTML = `
+                <strong>Key Metrics</strong><br>
+                Total Persons: ${totalPersons}<br>
+                Water Usage per Person: ${waterUsage} L<br>
+                Daily Wastewater: ${dailyWastewater} L<br>
+                <br><strong>Tank Specifications</strong><br>
+                Total Volume: <span class="highlight">${totalVolume} L</span><br>
+                Dimensions: ${length.toFixed(2)} ft × ${width.toFixed(2)} ft × ${height} ft<br>
+                Capacity: ${capacityDays} Days<br>
+                <small>Based on ${retention}-day retention and standard ${height} ft depth</small>
+            `;
+        }
+
+        // Prevent URL display on hover
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('mouseover', function(e) {
+            // Clear any existing status text
+            window.status = '';
+            return true;
+        });
+        
+        // Alternative method to prevent status bar changes
+        link.onmouseover = link.onmouseout = function() {
+            return true;
+        };
+    });
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Optional: Disable keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') e.preventDefault();
+    
+    // Disable Ctrl+Shift+I (Chrome, Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') e.preventDefault();
+    
+    // Disable Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') e.preventDefault();
+    
+    // Disable Ctrl+U (View source)
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+    </script>
+</body>
+</html>

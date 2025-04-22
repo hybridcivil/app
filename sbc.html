@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soil Bearing Capacity Calculator</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            padding: 20px; 
+            background-color: #f4f4f4;
+            text-align: center;
+            overflow-x: hidden;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            overflow: hidden;
+        }
+        label, select, input, button {
+            display: block;
+            width: 100%;
+            margin-top: 10px;
+        }
+        input, select {
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+        button {
+            background-color: #28a745;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .hidden { display: none; }
+        .factors {
+            background-color: #f8f9fa;
+            padding: 10px;
+            border-radius: 5px;
+            margin-top: 15px;
+            text-align: left;
+        }
+        .result {
+            font-weight: bold;
+            color: #007bff;
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e9ecef;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Soil Bearing Capacity Calculator</h2>
+        <p>Based on Terzaghi's Bearing Capacity Theory</p>
+        
+        <label for="calcType">Choose Calculation Type:</label>
+        <select id="calcType" onchange="showInputs()">
+            <option value="">-- Select --</option>
+            <option value="bearing">Ultimate Bearing Capacity</option>
+            <option value="depth">Minimum Foundation Depth</option>
+            <option value="width">Minimum Foundation Width</option>
+        </select>
+
+        <div id="bearingInputs" class="hidden">
+            <h3>Bearing Capacity Inputs</h3>
+            <label for="soilType">Soil Type:</label>
+            <select id="soilType" onchange="updateSoilParams()">
+                <option value="general">General Case</option>
+                <option value="clay">Purely Cohesive Soil (Clay)</option>
+                <option value="sand">Cohesionless Soil (Sand)</option>
+            </select>
+            
+            <label for="cohesion">Cohesion (c) in kN/m²:</label>
+            <input type="number" id="cohesion" placeholder="Enter cohesion value" value="0">
+            
+            <label for="unitWeight">Unit Weight (γ) in kN/m³:</label>
+            <input type="number" id="unitWeight" placeholder="Enter unit weight" value="18">
+            
+            <label for="depth">Depth of Foundation (D<sub>f</sub>) in m:</label>
+            <input type="number" id="depth" placeholder="Enter depth" value="1">
+            
+            <label for="width">Width of Foundation (B) in m:</label>
+            <input type="number" id="width" placeholder="Enter width" value="1">
+            
+            <label for="frictionAngle">Angle of Internal Friction (φ) in degrees:</label>
+            <input type="number" id="frictionAngle" placeholder="Enter angle" value="30" min="0" max="45">
+            
+            <div class="factors">
+                <p>Terzaghi's Bearing Capacity Factors:</p>
+                <p>N<sub>c</sub>: <span id="NcValue">0</span></p>
+                <p>N<sub>q</sub>: <span id="NqValue">0</span></p>
+                <p>N<sub>γ</sub>: <span id="NgammaValue">0</span></p>
+            </div>
+            
+            <button onclick="calculateBearingCapacity()">Calculate Ultimate Bearing Capacity</button>
+            <div class="result">Result: <span id="result"></span></div>
+        </div>
+
+        <div id="depthInputs" class="hidden">
+            <h3>Minimum Foundation Depth Calculation</h3>
+            <label for="cohesionDepth">Cohesion (c) in kN/m²:</label>
+            <input type="number" id="cohesionDepth" placeholder="Enter cohesion value" value="0">
+            
+            <label for="unitWeightDepth">Unit Weight (γ) in kN/m³:</label>
+            <input type="number" id="unitWeightDepth" placeholder="Enter unit weight" value="18">
+            
+            <label for="widthDepth">Width of Foundation (B) in m:</label>
+            <input type="number" id="widthDepth" placeholder="Enter width" value="1">
+            
+            <label for="frictionAngleDepth">Angle of Internal Friction (φ) in degrees:</label>
+            <input type="number" id="frictionAngleDepth" placeholder="Enter angle" value="30" min="0" max="45">
+            
+            <label for="loadDepth">Expected Load (q) in kN/m²:</label>
+            <input type="number" id="loadDepth" placeholder="Enter expected load" value="100">
+            
+            <div class="factors">
+                <p>Terzaghi's Bearing Capacity Factors:</p>
+                <p>N<sub>c</sub>: <span id="NcDepthValue">0</span></p>
+                <p>N<sub>q</sub>: <span id="NqDepthValue">0</span></p>
+                <p>N<sub>γ</sub>: <span id="NgammaDepthValue">0</span></p>
+            </div>
+            
+            <button onclick="calculateDepth()">Calculate Minimum Depth</button>
+            <div class="result">Result: <span id="depthResult"></span></div>
+        </div>
+
+        <div id="widthInputs" class="hidden">
+            <h3>Minimum Foundation Width Calculation</h3>
+            <label for="cohesionWidth">Cohesion (c) in kN/m²:</label>
+            <input type="number" id="cohesionWidth" placeholder="Enter cohesion value" value="0">
+            
+            <label for="unitWeightWidth">Unit Weight (γ) in kN/m³:</label>
+            <input type="number" id="unitWeightWidth" placeholder="Enter unit weight" value="18">
+            
+            <label for="depthWidth">Depth of Foundation (D<sub>f</sub>) in m:</label>
+            <input type="number" id="depthWidth" placeholder="Enter depth" value="1">
+            
+            <label for="frictionAngleWidth">Angle of Internal Friction (φ) in degrees:</label>
+            <input type="number" id="frictionAngleWidth" placeholder="Enter angle" value="30" min="0" max="45">
+            
+            <label for="loadWidth">Expected Load (q) in kN/m²:</label>
+            <input type="number" id="loadWidth" placeholder="Enter expected load" value="100">
+            
+            <div class="factors">
+                <p>Terzaghi's Bearing Capacity Factors:</p>
+                <p>N<sub>c</sub>: <span id="NcWidthValue">0</span></p>
+                <p>N<sub>q</sub>: <span id="NqWidthValue">0</span></p>
+                <p>N<sub>γ</sub>: <span id="NgammaWidthValue">0</span></p>
+            </div>
+            
+            <button onclick="calculateWidth()">Calculate Minimum Width</button>
+            <div class="result">Result: <span id="widthResult"></span></div>
+        </div>
+    </div>
+
+<script>
+    // Terzaghi's bearing capacity factors
+    function getTerzaghiFactors(phi) {
+        phi = parseFloat(phi);
+        let Nq, Nc, Ngamma;
+        
+        // Convert degrees to radians
+        const phiRad = phi * Math.PI / 180;
+        
+        // Calculate Nq
+        Nq = Math.exp(Math.PI * Math.tan(phiRad)) * Math.pow(Math.tan(Math.PI/4 + phiRad/2), 2);
+        
+        // Calculate Nc
+        if (phi === 0) {
+            Nc = 5.7; // For φ = 0 (pure clay)
+        } else {
+            Nc = (Nq - 1) * (1 / Math.tan(phiRad));
+        }
+        
+        // Calculate Nγ (Terzaghi's original values)
+        if (phi === 0) {
+            Ngamma = 0;
+        } else if (phi === 5) {
+            Ngamma = 0.5;
+        } else if (phi === 10) {
+            Ngamma = 1.2;
+        } else if (phi === 15) {
+            Ngamma = 2.5;
+        } else if (phi === 20) {
+            Ngamma = 5.0;
+        } else if (phi === 25) {
+            Ngamma = 9.7;
+        } else if (phi === 30) {
+            Ngamma = 19.7;
+        } else if (phi === 35) {
+            Ngamma = 42.4;
+        } else if (phi === 40) {
+            Ngamma = 100.4;
+        } else if (phi === 45) {
+            Ngamma = 297.5;
+        } else {
+            // Linear interpolation for intermediate values
+            const phiValues = [0, 5, 10, 15, 20, 25, 30, 35, 40, 45];
+            const NgammaValues = [0, 0.5, 1.2, 2.5, 5.0, 9.7, 19.7, 42.4, 100.4, 297.5];
+            
+            let lowerIdx = 0;
+            for (let i = 0; i < phiValues.length; i++) {
+                if (phi >= phiValues[i]) {
+                    lowerIdx = i;
+                } else {
+                    break;
+                }
+            }
+            
+            if (lowerIdx === phiValues.length - 1) {
+                Ngamma = NgammaValues[lowerIdx];
+            } else {
+                const x0 = phiValues[lowerIdx];
+                const x1 = phiValues[lowerIdx + 1];
+                const y0 = NgammaValues[lowerIdx];
+                const y1 = NgammaValues[lowerIdx + 1];
+                Ngamma = y0 + (phi - x0) * (y1 - y0) / (x1 - x0);
+            }
+        }
+        
+        return {
+            Nc: Nc.toFixed(2),
+            Nq: Nq.toFixed(2),
+            Ngamma: Ngamma.toFixed(2)
+        };
+    }
+
+    function updateSoilParams() {
+        const soilType = document.getElementById('soilType').value;
+        
+        if (soilType === 'clay') {
+            document.getElementById('cohesion').value = '50';
+            document.getElementById('frictionAngle').value = '0';
+        } else if (soilType === 'sand') {
+            document.getElementById('cohesion').value = '0';
+            document.getElementById('frictionAngle').value = '30';
+        }
+        
+        updateTerzaghiFactors();
+    }
+
+    function updateTerzaghiFactors() {
+        // Update factors for bearing capacity calculation
+        const phi = document.getElementById('frictionAngle').value;
+        if (phi !== "") {
+            const factors = getTerzaghiFactors(phi);
+            document.getElementById('NcValue').textContent = factors.Nc;
+            document.getElementById('NqValue').textContent = factors.Nq;
+            document.getElementById('NgammaValue').textContent = factors.Ngamma;
+        }
+        
+        // Update factors for depth calculation
+        const phiDepth = document.getElementById('frictionAngleDepth').value;
+        if (phiDepth !== "") {
+            const factorsDepth = getTerzaghiFactors(phiDepth);
+            document.getElementById('NcDepthValue').textContent = factorsDepth.Nc;
+            document.getElementById('NqDepthValue').textContent = factorsDepth.Nq;
+            document.getElementById('NgammaDepthValue').textContent = factorsDepth.Ngamma;
+        }
+        
+        // Update factors for width calculation
+        const phiWidth = document.getElementById('frictionAngleWidth').value;
+        if (phiWidth !== "") {
+            const factorsWidth = getTerzaghiFactors(phiWidth);
+            document.getElementById('NcWidthValue').textContent = factorsWidth.Nc;
+            document.getElementById('NqWidthValue').textContent = factorsWidth.Nq;
+            document.getElementById('NgammaWidthValue').textContent = factorsWidth.Ngamma;
+        }
+    }
+
+    function showInputs() {
+        document.getElementById('bearingInputs').classList.add('hidden');
+        document.getElementById('depthInputs').classList.add('hidden');
+        document.getElementById('widthInputs').classList.add('hidden');
+        
+        let selected = document.getElementById('calcType').value;
+        if (selected === 'bearing') {
+            document.getElementById('bearingInputs').classList.remove('hidden');
+            updateTerzaghiFactors();
+        } else if (selected === 'depth') {
+            document.getElementById('depthInputs').classList.remove('hidden');
+            updateTerzaghiFactors();
+        } else if (selected === 'width') {
+            document.getElementById('widthInputs').classList.remove('hidden');
+            updateTerzaghiFactors();
+        }
+    }
+
+    function calculateBearingCapacity() {
+        const c = parseFloat(document.getElementById('cohesion').value) || 0;
+        const gamma = parseFloat(document.getElementById('unitWeight').value) || 0;
+        const Df = parseFloat(document.getElementById('depth').value) || 0;
+        const B = parseFloat(document.getElementById('width').value) || 0;
+        const phi = parseFloat(document.getElementById('frictionAngle').value) || 0;
+        
+        const factors = getTerzaghiFactors(phi);
+        const Nc = parseFloat(factors.Nc);
+        const Nq = parseFloat(factors.Nq);
+        const Ngamma = parseFloat(factors.Ngamma);
+        
+        // Terzaghi's ultimate bearing capacity equation
+        const qult = c * Nc + gamma * Df * Nq + 0.5 * gamma * B * Ngamma;
+        
+        document.getElementById('result').innerHTML = `
+            Ultimate Bearing Capacity (q<sub>ult</sub>) = ${qult.toFixed(2)} kN/m²<br>
+            <small>Using N<sub>c</sub>=${Nc.toFixed(2)}, N<sub>q</sub>=${Nq.toFixed(2)}, N<sub>γ</sub>=${Ngamma.toFixed(2)}</small>
+        `;
+    }
+
+    function calculateDepth() {
+        const c = parseFloat(document.getElementById('cohesionDepth').value) || 0;
+        const gamma = parseFloat(document.getElementById('unitWeightDepth').value) || 0;
+        const B = parseFloat(document.getElementById('widthDepth').value) || 0;
+        const phi = parseFloat(document.getElementById('frictionAngleDepth').value) || 0;
+        const q = parseFloat(document.getElementById('loadDepth').value) || 0;
+        
+        const factors = getTerzaghiFactors(phi);
+        const Nc = parseFloat(factors.Nc);
+        const Nq = parseFloat(factors.Nq);
+        const Ngamma = parseFloat(factors.Ngamma);
+        
+        // Solve Terzaghi's equation for Df
+        // q = c*Nc + γ*Df*Nq + 0.5*γ*B*Nγ
+        // => Df = (q - c*Nc - 0.5*γ*B*Nγ) / (γ*Nq)
+        let Df = (q - c * Nc - 0.5 * gamma * B * Ngamma) / (gamma * Nq);
+        
+        // If result is negative, set to minimum practical depth (0.5m)
+        if (Df < 0 || isNaN(Df)) {
+            Df = 0.5;
+            document.getElementById('depthResult').innerHTML = `
+                Minimum Practical Depth = ${Df.toFixed(2)} m<br>
+                <small>Calculated depth was invalid (negative or NaN). Using minimum practical depth.</small>
+            `;
+        } else {
+            document.getElementById('depthResult').innerHTML = `
+                Minimum Depth Required (D<sub>f</sub>) = ${Df.toFixed(2)} m<br>
+                <small>Using N<sub>c</sub>=${Nc.toFixed(2)}, N<sub>q</sub>=${Nq.toFixed(2)}, N<sub>γ</sub>=${Ngamma.toFixed(2)}</small>
+            `;
+        }
+    }
+
+    function calculateWidth() {
+        const c = parseFloat(document.getElementById('cohesionWidth').value) || 0;
+        const gamma = parseFloat(document.getElementById('unitWeightWidth').value) || 0;
+        const Df = parseFloat(document.getElementById('depthWidth').value) || 0;
+        const phi = parseFloat(document.getElementById('frictionAngleWidth').value) || 0;
+        const q = parseFloat(document.getElementById('loadWidth').value) || 0;
+        
+        const factors = getTerzaghiFactors(phi);
+        const Nc = parseFloat(factors.Nc);
+        const Nq = parseFloat(factors.Nq);
+        const Ngamma = parseFloat(factors.Ngamma);
+        
+        // Solve Terzaghi's equation for B
+        // q = c*Nc + γ*Df*Nq + 0.5*γ*B*Nγ
+        // => B = (q - c*Nc - γ*Df*Nq) / (0.5*γ*Nγ)
+        let B = (q - c * Nc - gamma * Df * Nq) / (0.5 * gamma * Ngamma);
+        
+        // If result is negative or Nγ is 0, set to minimum practical width (0.3m)
+        if (B < 0 || isNaN(B) || Ngamma === 0) {
+            B = 0.3;
+            document.getElementById('widthResult').innerHTML = `
+                Minimum Practical Width = ${B.toFixed(2)} m<br>
+                <small>Calculated width was invalid (negative, NaN, or Nγ=0). Using minimum practical width.</small>
+            `;
+        } else {
+            document.getElementById('widthResult').innerHTML = `
+                Minimum Width Required (B) = ${B.toFixed(2)} m<br>
+                <small>Using N<sub>c</sub>=${Nc.toFixed(2)}, N<sub>q</sub>=${Nq.toFixed(2)}, N<sub>γ</sub>=${Ngamma.toFixed(2)}</small>
+            `;
+        }
+    }
+
+    // Initialize event listeners for angle changes
+    document.getElementById('frictionAngle').addEventListener('input', updateTerzaghiFactors);
+    document.getElementById('frictionAngleDepth').addEventListener('input', updateTerzaghiFactors);
+    document.getElementById('frictionAngleWidth').addEventListener('input', updateTerzaghiFactors);
+    document.getElementById('soilType').addEventListener('change', updateSoilParams);
+
+    // Prevent URL display on hover
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('mouseover', function(e) {
+            // Clear any existing status text
+            window.status = '';
+            return true;
+        });
+        
+        // Alternative method to prevent status bar changes
+        link.onmouseover = link.onmouseout = function() {
+            return true;
+        };
+    });
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Optional: Disable keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') e.preventDefault();
+    
+    // Disable Ctrl+Shift+I (Chrome, Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') e.preventDefault();
+    
+    // Disable Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') e.preventDefault();
+    
+    // Disable Ctrl+U (View source)
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+</script>
+</body>
+</html>

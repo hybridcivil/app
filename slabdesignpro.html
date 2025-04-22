@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Two-Way Slab Calculator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 10px;
+            background-color: #f4f4f4;
+        }
+        .container {
+            max-width: 500px;
+            margin: auto;
+            background-color: #fff;
+            padding: 20px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+        }
+        h2 {
+            text-align: center;
+            color: #333;
+        }
+        label {
+            font-weight: bold;
+            display: block;
+            margin-top: 10px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            font-size: 16px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        #output {
+            margin-top: 15px;
+            padding: 10px;
+            background-color: #e8f5e9;
+            border-left: 5px solid #4CAF50;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Two-Way Slab Calculator</h2>
+
+    <label>Support Condition (Short Span - Lx):</label>
+    <select id="Mx">
+        <option value="0.062">All Edges Fixed</option>
+        <option value="0.078">Three Edges Fixed</option>
+        <option value="0.087">Two Adjacent Edges Fixed</option>
+        <option value="0.090">One Edge Fixed</option>
+        <option value="0.100">Simply Supported</option>
+    </select>
+
+    <label>Support Condition (Long Span - Ly):</label>
+    <select id="My">
+        <option value="0.062">All Edges Fixed</option>
+        <option value="0.078">Three Edges Fixed</option>
+        <option value="0.087">Two Adjacent Edges Fixed</option>
+        <option value="0.090">One Edge Fixed</option>
+        <option value="0.100">Simply Supported</option>
+    </select>
+
+    <label>Short Span (Lx) in feet:</label>
+    <input type="number" id="Lx" value="18" min="1" step="0.1">
+
+    <label>Long Span (Ly) in feet:</label>
+    <input type="number" id="Ly" value="22" min="1" step="0.1">
+
+    <label>Concrete Strength f'c (psi):</label>
+    <input type="number" id="fc" value="3000" min="2000" max="8000" step="500">
+
+    <label>Steel Strength fy (psi):</label>
+    <input type="number" id="fy" value="60000" min="40000" max="80000" step="5000">
+
+    <button id="calculateBtn">Calculate</button>
+
+    <div id="output"></div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const calculateBtn = document.getElementById("calculateBtn");
+        calculateBtn.addEventListener("click", calculateSlab);
+
+        function calculateSlab() {
+            // Get input values
+            let Mx = parseFloat(document.getElementById("Mx").value);
+            let My = parseFloat(document.getElementById("My").value);
+            let Lx = parseFloat(document.getElementById("Lx").value);
+            let Ly = parseFloat(document.getElementById("Ly").value);
+            let fc = parseFloat(document.getElementById("fc").value);
+            let fy = parseFloat(document.getElementById("fy").value);
+
+            // Input validation
+            if (Lx <= 0 || Ly <= 0 || fc < 2000 || fy < 40000) {
+                document.getElementById("output").innerHTML = "Please enter valid input values.";
+                return;
+            }
+
+            // Slab thickness calculation
+            let beta = Ly / Lx;
+            let ln = Ly * 12;
+            let thicknessFactor = (Mx === 0.062 && My === 0.062) ? 36 : 
+                                (Mx === 0.100 || My === 0.100) ? 20 : 28;
+            let minThickness = ln / thicknessFactor;
+            let totalThickness = Math.max(5, Math.ceil(minThickness / 0.5) * 0.5);
+
+            // Load calculations
+            let slabDL = (totalThickness / 12) * 150;
+            let liveLoad = 45;
+            let factoredLoad = (slabDL * 1.2) + (liveLoad * 1.6);
+
+            // Moment calculations
+            let d = totalThickness - 1.25;
+            let r = Lx / Ly;
+            let wu = factoredLoad / 1000;
+
+            let M_x = wu * Lx * Ly * Ly * Mx * (1 / (1 + r * r));
+            let M_y = wu * Lx * Ly * Ly * My * (r * r / (1 + r * r));
+
+            // Reinforcement calculations
+            let phi = 0.9;
+            let b = 12;
+
+            function calcAs(Mu, d) {
+                let Mu_in = Mu * 12000;
+                let a = Math.sqrt(2 * Mu_in / (0.85 * phi * fc * b));
+                if (a > d) a = d * 0.85;
+                let As = Mu_in / (phi * fy * (d - a/2));
+                let As_min = Math.max(0.0018 * b * totalThickness, 3 * Math.sqrt(fc) * b * d / fy);
+                return Math.max(As, As_min);
+            }
+
+            function findBarSizeAndSpacing(As, spanType) {
+                let barOptions = [
+                    { size: "#3", area: 0.11 },
+                    { size: "#4", area: 0.20 }
+                ];
+                
+                let minSpacing = spanType === "short" ? 50 : 75;
+                let maxSpacing = Math.min(3 * totalThickness * 25.4, 450);
+
+                for (let bar of barOptions) {
+                    let spacing = Math.round((bar.area / As) * 12 * 25.4);
+                    if (spacing >= minSpacing && spacing <= maxSpacing) {
+                        return `${bar.size} @ ${spacing}mm`;
+                    }
+                }
+                
+                // Default case
+                let defaultBar = barOptions[1];
+                let defaultSpacing = Math.round((defaultBar.area / As) * 12 * 25.4);
+                defaultSpacing = Math.max(minSpacing, Math.min(defaultSpacing, maxSpacing));
+                return `${defaultBar.size} @ ${defaultSpacing}mm`;
+            }
+
+            // Final results
+            let As_x = calcAs(M_x, d);
+            let As_y = calcAs(M_y, d);
+            let bar_x = findBarSizeAndSpacing(As_x, "short");
+            let bar_y = findBarSizeAndSpacing(As_y, "long");
+
+            // Display output
+            document.getElementById("output").innerHTML =
+                `<strong>Total Factored Load:</strong> ${factoredLoad.toFixed(2)} psf <br>
+                 <strong>Moment (Mx):</strong> ${M_x.toFixed(2)} kip-ft/ft <br>
+                 <strong>Moment (My):</strong> ${M_y.toFixed(2)} kip-ft/ft <br>
+                 <strong>Slab Thickness:</strong> ${totalThickness.toFixed(1)} inches <br>
+                 <strong>Steel As (Short Span):</strong> ${As_x.toFixed(2)} in²/ft → ${bar_x} <br>
+                 <strong>Steel As (Long Span):</strong> ${As_y.toFixed(2)} in²/ft → ${bar_y}`;
+        }
+    });
+
+    // Prevent URL display on hover
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('mouseover', function(e) {
+            // Clear any existing status text
+            window.status = '';
+            return true;
+        });
+        
+        // Alternative method to prevent status bar changes
+        link.onmouseover = link.onmouseout = function() {
+            return true;
+        };
+    });
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Optional: Disable keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') e.preventDefault();
+    
+    // Disable Ctrl+Shift+I (Chrome, Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') e.preventDefault();
+    
+    // Disable Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') e.preventDefault();
+    
+    // Disable Ctrl+U (View source)
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+</script>
+
+</body>
+</html>

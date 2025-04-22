@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interpolation Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .error {
+            margin-top: 25px;
+            padding: 15px;
+            background: #fce8e6;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 16px;
+            color: #dc3545;
+            line-height: 1.6;
+            display: none;
+        }
+
+        .result strong {
+            color: #007BFF;
+            font-weight: 600;
+        }
+
+        .highlight {
+            color: #dc3545; /* Red color for highlighted values */
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            input, button {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Linear Interpolation Calculator</h2>
+        
+        <label for="x1">X1:</label>
+        <input type="number" id="x1" placeholder="Enter X1">
+
+        <label for="y1">Y1:</label>
+        <input type="number" id="y1" placeholder="Enter Y1">
+
+        <label for="x2">X2:</label>
+        <input type="number" id="x2" placeholder="Enter X2">
+
+        <label for="y2">Y2:</label>
+        <input type="number" id="y2" placeholder="Enter Y2">
+
+        <label for="x">Target X:</label>
+        <input type="number" id="x" placeholder="Enter target X">
+
+        <button onclick="interpolate()">Calculate</button>
+        
+        <div class="result" id="result"></div>
+        <div class="error" id="error"></div>
+    </div>
+
+    <script>
+        function interpolate() {
+            // Clear previous messages
+            const resultElement = document.getElementById('result');
+            const errorElement = document.getElementById('error');
+            resultElement.style.display = 'none';
+            errorElement.style.display = 'none';
+
+            // Get input values
+            const x1 = parseFloat(document.getElementById("x1").value);
+            const y1 = parseFloat(document.getElementById("y1").value);
+            const x2 = parseFloat(document.getElementById("x2").value);
+            const y2 = parseFloat(document.getElementById("y2").value);
+            const x = parseFloat(document.getElementById("x").value);
+
+            // Validation
+            if ([x1, y1, x2, y2, x].some(isNaN)) {
+                errorElement.innerText = "Please fill all fields with valid numbers.";
+                errorElement.style.display = 'block';
+                return;
+            }
+            
+            if (x2 === x1) {
+                errorElement.innerText = "X1 and X2 cannot be equal.";
+                errorElement.style.display = 'block';
+                return;
+            }
+
+            // Calculation
+            const y = y1 + ((y2 - y1) / (x2 - x1)) * (x - x1);
+            
+            // Display result
+            resultElement.innerHTML = `
+                <strong>Result</strong><br>
+                Interpolated Y: <span class="highlight">${y.toFixed(4)}</span><br>
+                <small>For X = ${x} between (${x1}, ${y1}) and (${x2}, ${y2})</small>
+            `;
+            resultElement.style.display = 'block';
+        }
+
+        // Prevent URL display on hover
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('mouseover', function(e) {
+            // Clear any existing status text
+            window.status = '';
+            return true;
+        });
+        
+        // Alternative method to prevent status bar changes
+        link.onmouseover = link.onmouseout = function() {
+            return true;
+        };
+    });
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Optional: Disable keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') e.preventDefault();
+    
+    // Disable Ctrl+Shift+I (Chrome, Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') e.preventDefault();
+    
+    // Disable Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') e.preventDefault();
+    
+    // Disable Ctrl+U (View source)
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+    </script>
+</body>
+</html>

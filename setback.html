@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Setback Calculator</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            background: #ffffff;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h2 {
+            color: #333;
+            margin-bottom: 25px;
+            font-size: 24px;
+        }
+
+        label {
+            display: block;
+            text-align: left;
+            margin-bottom: 8px;
+            color: #555;
+            font-weight: 500;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 20px;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #007BFF;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #007BFF;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        .result {
+            margin-top: 25px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            text-align: left;
+            font-size: 16px;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .result strong {
+            color: #007BFF;
+            font-weight: 600;
+        }
+
+        .unused-percentage {
+            color: #dc3545; /* Red color for unused percentage */
+            font-weight: bold;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 20px;
+            }
+            
+            h2 {
+                font-size: 20px;
+            }
+            
+            input, button, select {
+                font-size: 14px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Setback Calculator</h2>
+        <label for="decimal">Enter Land Area (in Decimal):</label>
+        <input type="number" id="decimal" step="0.01" placeholder="e.g., 5.25" min="0">
+        <label for="roadWidth">Enter Road Width (in Feet):</label>
+        <input type="number" id="roadWidth" step="0.1" placeholder="e.g., 20" min="0">
+        <label for="roadType">Select Road Type:</label>
+        <select id="roadType">
+            <option value="government">Government Road</option>
+            <option value="private">Private Road</option>
+        </select>
+        <button onclick="calculateSetback()">Calculate Setback</button>
+        <div class="result" id="output">
+            Enter values and click calculate to see results.
+        </div>
+    </div>
+
+    <script>
+        function calculateSetback() {
+            const decimal = parseFloat(document.getElementById("decimal").value);
+            const roadWidthFeet = parseFloat(document.getElementById("roadWidth").value);
+            const roadType = document.getElementById("roadType").value;
+            const output = document.getElementById("output");
+
+            // Validation
+            if (isNaN(decimal) || decimal <= 0 || isNaN(roadWidthFeet) || roadWidthFeet <= 0) {
+                output.innerHTML = "Please enter valid positive values for both land area and road width.";
+                output.style.color = "#dc3545";
+                return;
+            }
+
+            output.style.color = "#333";
+
+            // Convert road width to meters
+            const roadWidthMeters = roadWidthFeet * 0.3048;
+            const halfRoadWidthMeters = roadWidthMeters / 2;
+
+            // Setback calculation based on road type
+            let front;
+            if (roadType === "private") {
+                front = 1.5; // Fixed 1.5m for private road
+            } else {
+                // Government road: original logic
+                const setbackFromCenterMeters = halfRoadWidthMeters + 4.5;
+                const setbackFromEdgeMeters = 4.5;
+                const minSetbackMeters = 1.5;
+                let frontFromEdge = Math.max(minSetbackMeters, setbackFromEdgeMeters - halfRoadWidthMeters);
+                if (frontFromEdge < minSetbackMeters) frontFromEdge = minSetbackMeters;
+                front = Math.max(minSetbackMeters, frontFromEdge);
+            }
+
+            // Back and side setbacks based on khatha
+            const khatha = (decimal * 435.6) / 720;
+            let back, side;
+            if (khatha < 2) {
+                back = 1;
+                side = 0.8;
+            } else if (khatha < 3) {
+                back = 1;
+                side = 1;
+            } else if (khatha < 4) {
+                back = 1.5;
+                side = 1;
+            } else {
+                back = 2;
+                side = 1.25;
+            }
+
+            // Calculate total and usable area
+            const totalAreaSqFt = decimal * 435.6; // Total area in square feet
+            const sideLengthFeet = Math.sqrt(totalAreaSqFt); // Assuming square plot
+            const sideLengthMeters = sideLengthFeet * 0.3048;
+
+            // Usable dimensions after setbacks (convert setbacks to feet)
+            const frontFeet = front * 3.28084;
+            const backFeet = back * 3.28084;
+            const sideFeet = side * 3.28084;
+            const usableLengthFeet = sideLengthFeet - frontFeet - backFeet;
+            const usableWidthFeet = sideLengthFeet - 2 * sideFeet;
+
+            // Check if usable dimensions are positive
+            if (usableLengthFeet <= 0 || usableWidthFeet <= 0) {
+                output.innerHTML = "Setbacks exceed land dimensions. No usable area available.";
+                output.style.color = "#dc3545";
+                return;
+            }
+
+            // Calculate areas
+            const usableAreaSqFt = usableLengthFeet * usableWidthFeet;
+            const setbackAreaSqFt = totalAreaSqFt - usableAreaSqFt;
+            const unusedPercentage = (setbackAreaSqFt / totalAreaSqFt) * 100;
+
+            // Convert front setback to feet and inches
+            const totalFeet = Math.floor(front * 3.28084);
+            const inches = Math.round((front * 3.28084 - totalFeet) * 12);
+
+            output.innerHTML = `
+                <strong>Setback Distances</strong><br>
+                Front: ${front.toFixed(2)} m (${totalFeet} ft ${inches} in)<br>
+                Back: ${back} m (${backFeet.toFixed(2)} ft)<br>
+                Side: ${side} m (${sideFeet.toFixed(2)} ft)<br>
+                <br><strong>Area Details</strong><br>
+                Total Area: ${totalAreaSqFt.toFixed(2)} sq ft<br>
+                Setback Area: ${setbackAreaSqFt.toFixed(2)} sq ft<br>
+                Usable Area: ${usableAreaSqFt.toFixed(2)} sq ft<br>
+                <span class="unused-percentage">% of Land Unused (Setback): ${unusedPercentage.toFixed(2)}%</span><br>
+                <small>Based on ${khatha.toFixed(2)} khatha and ${roadWidthFeet.toFixed(1)} ft ${roadType} road</small>
+            `;
+        }
+
+        // Prevent URL display on hover
+document.addEventListener('DOMContentLoaded', function() {
+    const links = document.querySelectorAll('a');
+    links.forEach(link => {
+        link.addEventListener('mouseover', function(e) {
+            // Clear any existing status text
+            window.status = '';
+            return true;
+        });
+        
+        // Alternative method to prevent status bar changes
+        link.onmouseover = link.onmouseout = function() {
+            return true;
+        };
+    });
+});
+
+// Disable right-click
+document.addEventListener('contextmenu', function(e) {
+    e.preventDefault();
+});
+
+// Optional: Disable keyboard shortcuts (F12, Ctrl+Shift+I, etc.)
+document.addEventListener('keydown', function(e) {
+    // Disable F12
+    if (e.key === 'F12') e.preventDefault();
+    
+    // Disable Ctrl+Shift+I (Chrome, Firefox)
+    if (e.ctrlKey && e.shiftKey && e.key === 'I') e.preventDefault();
+    
+    // Disable Ctrl+Shift+J (Chrome)
+    if (e.ctrlKey && e.shiftKey && e.key === 'J') e.preventDefault();
+    
+    // Disable Ctrl+U (View source)
+    if (e.ctrlKey && e.key === 'u') e.preventDefault();
+});
+    </script>
+</body>
+</html>
