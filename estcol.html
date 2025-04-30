@@ -1,53 +1,84 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
   <title>Column Details</title>
   <style>
-    body { font-family: Arial; margin: 20px; }
-    label { display: block; margin-top: 10px; }
-    input { margin-bottom: 10px; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
-    .rebar-input { margin-bottom: 5px; }
-    .short-column { background-color: #f0f0f0; } /* Style short column rows */
+    .input-box {
+      margin-bottom: 15px;
+    }
+    .input-box label {
+      display: inline-block;
+      width: 150px;
+    }
+    .input-box input {
+      padding: 5px;
+      width: 200px;
+    }
+    .button {
+      padding: 6px 12px;
+      margin-top: 10px;
+    }
+    table {
+      border-collapse: collapse;
+      width: 100%;
+      margin-top: 20px;
+    }
+    table, th, td {
+      border: 1px solid black;
+    }
+    th, td {
+      padding: 8px;
+      text-align: center;
+    }
+    .short-column {
+      background-color: #f0f0f0;
+    }
   </style>
 </head>
 <body>
 
-  <h2>Column Input</h2>
-  
-  <label>Column Name:</label>
-  <input type="text" id="columnName">
+  <div class="input-box">
+    <label for="columnName">Column Name:</label>
+    <input type="text" id="columnName" />
+  </div>
 
-  <label>X Dimension (in):</label>
-  <input type="number" id="columnX">
+  <div class="input-box">
+    <label for="columnX">X Dimension (in):</label>
+    <input type="number" id="columnX" />
+  </div>
 
-  <label>Y Dimension (in):</label>
-  <input type="number" id="columnY">
+  <div class="input-box">
+    <label for="columnY">Y Dimension (in):</label>
+    <input type="number" id="columnY" />
+  </div>
 
-  <label>Column Height (ft):</label>
-  <input type="number" id="columnHeight">
+  <div class="input-box">
+    <label for="columnHeight">Column Height (ft):</label>
+    <input type="number" id="columnHeight" />
+  </div>
 
-  <label>Short Column Height (ft):</label>
-  <input type="number" id="shortColumnHeight" placeholder="Optional">
+  <div class="input-box">
+    <label for="shortColumnHeight">Short Column Height (ft):</label>
+    <input type="number" id="shortColumnHeight" placeholder="Optional" />
+  </div>
 
-  <label>No. of Columns:</label>
-  <input type="number" id="columnNos">
+  <div class="input-box">
+    <label for="columnNos">No. of Columns:</label>
+    <input type="number" id="columnNos" />
+  </div>
 
-  <label>Rebars:</label>
   <div id="rebarContainer">
-    <div class="rebar-input">
+    <div class="input-box rebar-input">
+      <label>Rebar:</label>
       <button type="button" onclick="addRebarField()">+</button>
       <button type="button" onclick="removeRebarField(this)">-</button>
-      <input type="number" class="barDia" placeholder="Bar Size (mm)" required>
-      <input type="number" class="barNos" placeholder="Nos." required>
+      <input type="number" class="barDia" placeholder="Bar Size (mm)" />
+      <input type="number" class="barNos" placeholder="Nos." />
     </div>
   </div>
 
-  <button onclick="addColumn()">Add Column</button>
+  <button class="button" onclick="addColumn()">Add Column</button>
 
-  <h2>Column List</h2>
   <table>
     <thead>
       <tr>
@@ -64,12 +95,13 @@
   <script>
     function addRebarField() {
       const div = document.createElement("div");
-      div.className = "rebar-input";
+      div.className = "input-box rebar-input";
       div.innerHTML = `
+        <label>Rebar:</label>
         <button type="button" onclick="addRebarField()">+</button>
         <button type="button" onclick="removeRebarField(this)">-</button>
-        <input type="number" class="barDia" placeholder="Bar Size (mm)" required>
-        <input type="number" class="barNos" placeholder="Nos." required>
+        <input type="number" class="barDia" placeholder="Bar Size (mm)" />
+        <input type="number" class="barNos" placeholder="Nos." />
       `;
       document.getElementById("rebarContainer").appendChild(div);
     }
@@ -104,15 +136,15 @@
         return `${n} bars of ${dia}mm`;
       }).join("<br>");
 
-      const rowLong = document.createElement("tr");
-      rowLong.innerHTML = `
+      const row = document.createElement("tr");
+      row.innerHTML = `
         <td>${nos}</td>
         <td>${name}</td>
         <td>${adjustedX}x${adjustedY}</td>
         <td>${height}</td>
         <td>${rebars}</td>
       `;
-      columnList.appendChild(rowLong);
+      columnList.appendChild(row);
 
       if (!isNaN(shortHeight) && shortHeight > 0) {
         const rowShort = document.createElement("tr");
@@ -127,7 +159,7 @@
         columnList.appendChild(rowShort);
       }
 
-      // Reset fields
+      // Reset inputs
       document.getElementById("columnName").value = "";
       document.getElementById("columnX").value = "";
       document.getElementById("columnY").value = "";
@@ -135,11 +167,12 @@
       document.getElementById("shortColumnHeight").value = "";
       document.getElementById("columnNos").value = "";
       document.getElementById("rebarContainer").innerHTML = `
-        <div class="rebar-input">
+        <div class="input-box rebar-input">
+          <label>Rebar:</label>
           <button type="button" onclick="addRebarField()">+</button>
           <button type="button" onclick="removeRebarField(this)">-</button>
-          <input type="number" class="barDia" placeholder="Bar Size (mm)" required>
-          <input type="number" class="barNos" placeholder="Nos." required>
+          <input type="number" class="barDia" placeholder="Bar Size (mm)" />
+          <input type="number" class="barNos" placeholder="Nos." />
         </div>
       `;
     }
