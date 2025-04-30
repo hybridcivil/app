@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Column Details</title>
+  <style>
+    body { font-family: Arial; margin: 20px; }
+    label { display: block; margin-top: 10px; }
+    input { margin-bottom: 10px; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { border: 1px solid #ccc; padding: 8px; text-align: center; }
+    .rebar-input { margin-bottom: 5px; }
+    .short-column { background-color: #f0f0f0; } /* Style short column rows */
+  </style>
+</head>
+<body>
+
+  <h2>Column Input</h2>
+  
+  <label>Column Name:</label>
+  <input type="text" id="columnName">
+
+  <label>X Dimension (in):</label>
+  <input type="number" id="columnX">
+
+  <label>Y Dimension (in):</label>
+  <input type="number" id="columnY">
+
+  <label>Column Height (ft):</label>
+  <input type="number" id="columnHeight">
+
+  <label>Short Column Height (ft):</label>
+  <input type="number" id="shortColumnHeight" placeholder="Optional">
+
+  <label>No. of Columns:</label>
+  <input type="number" id="columnNos">
+
+  <label>Rebars:</label>
+  <div id="rebarContainer">
+    <div class="rebar-input">
+      <button type="button" onclick="addRebarField()">+</button>
+      <button type="button" onclick="removeRebarField(this)">-</button>
+      <input type="number" class="barDia" placeholder="Bar Size (mm)" required>
+      <input type="number" class="barNos" placeholder="Nos." required>
+    </div>
+  </div>
+
+  <button onclick="addColumn()">Add Column</button>
+
+  <h2>Column List</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>Nos</th>
+        <th>Column</th>
+        <th>Size (in)</th>
+        <th>Height (ft)</th>
+        <th>Rebars</th>
+      </tr>
+    </thead>
+    <tbody id="columnList"></tbody>
+  </table>
+
+  <script>
+    function addRebarField() {
+      const div = document.createElement("div");
+      div.className = "rebar-input";
+      div.innerHTML = `
+        <button type="button" onclick="addRebarField()">+</button>
+        <button type="button" onclick="removeRebarField(this)">-</button>
+        <input type="number" class="barDia" placeholder="Bar Size (mm)" required>
+        <input type="number" class="barNos" placeholder="Nos." required>
+      `;
+      document.getElementById("rebarContainer").appendChild(div);
+    }
+
+    function removeRebarField(button) {
+      const div = button.parentNode;
+      if (document.querySelectorAll(".rebar-input").length > 1) {
+        div.remove();
+      }
+    }
+
+    function addColumn() {
+      const columnList = document.getElementById("columnList");
+      const name = document.getElementById("columnName").value.trim();
+      const x = parseFloat(document.getElementById("columnX").value);
+      const y = parseFloat(document.getElementById("columnY").value);
+      const height = parseFloat(document.getElementById("columnHeight").value);
+      const shortHeight = parseFloat(document.getElementById("shortColumnHeight").value);
+      const nos = parseInt(document.getElementById("columnNos").value);
+
+      if (!name || isNaN(x) || isNaN(y) || isNaN(height) || isNaN(nos)) {
+        alert("Please fill all required fields correctly.");
+        return;
+      }
+
+      const adjustedX = x + 3;
+      const adjustedY = y + 3;
+
+      const rebars = Array.from(document.querySelectorAll(".rebar-input")).map(rebar => {
+        const dia = rebar.querySelector(".barDia").value;
+        const n = rebar.querySelector(".barNos").value;
+        return `${n} bars of ${dia}mm`;
+      }).join("<br>");
+
+      const rowLong = document.createElement("tr");
+      rowLong.innerHTML = `
+        <td>${nos}</td>
+        <td>${name}</td>
+        <td>${adjustedX}x${adjustedY}</td>
+        <td>${height}</td>
+        <td>${rebars}</td>
+      `;
+      columnList.appendChild(rowLong);
+
+      if (!isNaN(shortHeight) && shortHeight > 0) {
+        const rowShort = document.createElement("tr");
+        rowShort.classList.add("short-column");
+        rowShort.innerHTML = `
+          <td>${nos}</td>
+          <td>${name}s</td>
+          <td>${adjustedX}x${adjustedY}</td>
+          <td>${shortHeight}</td>
+          <td>${rebars}</td>
+        `;
+        columnList.appendChild(rowShort);
+      }
+
+      // Reset fields
+      document.getElementById("columnName").value = "";
+      document.getElementById("columnX").value = "";
+      document.getElementById("columnY").value = "";
+      document.getElementById("columnHeight").value = "";
+      document.getElementById("shortColumnHeight").value = "";
+      document.getElementById("columnNos").value = "";
+      document.getElementById("rebarContainer").innerHTML = `
+        <div class="rebar-input">
+          <button type="button" onclick="addRebarField()">+</button>
+          <button type="button" onclick="removeRebarField(this)">-</button>
+          <input type="number" class="barDia" placeholder="Bar Size (mm)" required>
+          <input type="number" class="barNos" placeholder="Nos." required>
+        </div>
+      `;
+    }
+  </script>
+</body>
+</html>
