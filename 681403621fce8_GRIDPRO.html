@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Grid & Footing Calculator</title>
+    <style>
+        :root {
+            --primary-color: #4CAF50;
+            --secondary-color: #2196F3;
+            --highlight-edge: #e3f2fd;
+            --highlight-corner: #ffecb3;
+            --card-bg: white;
+            --border-radius: 8px;
+            --box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        * {
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 15px;
+            background-color: #f5f5f5;
+            line-height: 1.5;
+        }
+        
+        h1, h2, h3 {
+            color: #333;
+            margin-top: 0;
+        }
+        
+        .container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .card {
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            flex: 1 1 300px;
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: auto 1fr;
+            gap: 10px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        
+        label {
+            font-weight: bold;
+            white-space: nowrap;
+        }
+        
+        input, select {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            width: 100%;
+        }
+        
+        button {
+            background: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 10px 15px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 10px;
+            width: 100%;
+        }
+        
+        button.secondary {
+            background: var(--secondary-color);
+        }
+        
+        button:hover {
+            opacity: 0.9;
+        }
+        
+        .results {
+            margin-top: 20px;
+            background: var(--card-bg);
+            padding: 15px;
+            border-radius: var(--border-radius);
+            box-shadow: var(--box-shadow);
+            overflow-x: auto;
+        }
+        
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 10px;
+            min-width: 600px;
+        }
+        
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: center;
+        }
+        
+        th {
+            background-color: #f2f2f2;
+        }
+        
+        .highlight-edge {
+            background: var(--highlight-edge);
+        }
+        
+        .highlight-corner {
+            background: var(--highlight-corner);
+        }
+        
+        .footing-result {
+            background: #e1f5fe;
+            padding: 5px;
+            border-radius: 4px;
+            margin-top: 5px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+        
+        .extension-update {
+            animation: pulse 0.5s;
+            color: #2196F3;
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @media (max-width: 768px) {
+            .input-group {
+                grid-template-columns: 1fr;
+            }
+            
+            button {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>📐 Smart Grid & Footing Calculator</h1>
+    
+    <div class="container">
+        <div class="card">
+            <h2>X Direction Grids</h2>
+            <div id="x-dimensions"></div>
+            
+            <div class="input-group">
+                <label id="a-extension-label">A' to A extension (ft):</label>
+                <input type="number" id="a-extension" value="5" step="0.01">
+            </div>
+            <div class="input-group">
+                <label id="d-extension-label">D to D' extension (ft):</label>
+                <input type="number" id="d-extension" value="4" step="0.01">
+            </div>
+            
+            <button class="secondary" onclick="addXGrid()">➕ Add X Grid</button>
+        </div>
+        
+        <div class="card">
+            <h2>Y Direction Grids</h2>
+            <div id="y-dimensions"></div>
+            
+            <div class="input-group">
+                <label id="y1-extension-label">1' to 1 extension (ft):</label>
+                <input type="number" id="y1-extension" value="0" step="0.01">
+            </div>
+            <div class="input-group">
+                <label id="y4-extension-label">4 to 4' extension (ft):</label>
+                <input type="number" id="y4-extension" value="0" step="0.01">
+            </div>
+            
+            <button class="secondary" onclick="addYGrid()">➕ Add Y Grid</button>
+        </div>
+    </div>
+    
+    <div class="card">
+        <h2>⚙️ Footing Parameters</h2>
+        <div class="input-group">
+            <label>Load Factor (0.25):</label>
+            <input type="number" id="load-factor" value="0.25" step="0.01">
+        </div>
+        <div class="input-group">
+            <label>Concrete Density (ton/m³):</label>
+            <input type="number" id="concrete-density" value="2.2" step="0.1">
+        </div>
+        <div class="input-group">
+            <label>Number of Stories:</label>
+            <input type="number" id="stories" value="2" min="1">
+        </div>
+        <div class="input-group">
+            <label>Soil Bearing (tsf):</label>
+            <input type="number" id="soil-bearing" value="1" step="0.1">
+        </div>
+    </div>
+    
+    <button onclick="calculateAreas()">🔢 Calculate Areas & Footings</button>
+    
+    <div class="results">
+        <h2>📊 Results</h2>
+        <div id="result-table"></div>
+    </div>
+
+    <script>
+        // Initialize grid data
+        let xGrids = ['A', 'B', 'C', 'D'];
+        let xDistances = ['13\'4"', '17\'3"', '13\'5"'];
+        let yGrids = ['1', '2', '3', '4'];
+        let yDistances = ['11\'0"', '9\'0"', '10\'11"'];
+        
+        // Store extension values
+        let extensionValues = {
+            xStart: 5,
+            xEnd: 4,
+            yStart: 0,
+            yEnd: 0
+        };
+
+        // Initialize the page
+        document.addEventListener('DOMContentLoaded', function() {
+            renderXDimensions();
+            renderYDimensions();
+            updateExtensionLabels();
+        });
+
+        // Convert feet-inches to decimal feet
+        function feetInchesToDecimal(feetInches) {
+            if (!feetInches) return 0;
+            const parts = feetInches.split("'");
+            const feet = parseFloat(parts[0]);
+            const inches = parts[1] ? parseFloat(parts[1].replace('"', '')) : 0;
+            return feet + inches / 12;
+        }
+
+        // Render X dimension inputs
+        function renderXDimensions() {
+            const container = document.getElementById('x-dimensions');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < xGrids.length - 1; i++) {
+                const div = document.createElement('div');
+                div.className = 'input-group';
+                div.innerHTML = `
+                    <label>${xGrids[i]} to ${xGrids[i+1]}:</label>
+                    <input type="text" id="x-dist-${i}" value="${xDistances[i] || ''}" placeholder="e.g. 13'4"">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Render Y dimension inputs
+        function renderYDimensions() {
+            const container = document.getElementById('y-dimensions');
+            container.innerHTML = '';
+            
+            for (let i = 0; i < yGrids.length - 1; i++) {
+                const div = document.createElement('div');
+                div.className = 'input-group';
+                div.innerHTML = `
+                    <label>${yGrids[i]} to ${yGrids[i+1]}:</label>
+                    <input type="text" id="y-dist-${i}" value="${yDistances[i] || ''}" placeholder="e.g. 11'0"">
+                `;
+                container.appendChild(div);
+            }
+        }
+
+        // Add new X grid (with extension preservation)
+        function addXGrid() {
+            // Save current end extension value
+            extensionValues.xEnd = parseFloat(document.getElementById('d-extension').value) || 0;
+            
+            const lastChar = xGrids[xGrids.length - 1];
+            const nextChar = String.fromCharCode(lastChar.charCodeAt(0) + 1);
+            xGrids.push(nextChar);
+            xDistances.push('');
+            
+            renderXDimensions();
+            updateExtensionLabels();
+            
+            // Restore end extension value for new last grid
+            document.getElementById('d-extension').value = extensionValues.xEnd;
+            
+            // Visual feedback
+            flashExtensionLabel('d-extension-label');
+        }
+
+        // Add new Y grid (with extension preservation)
+        function addYGrid() {
+            // Save current end extension value
+            extensionValues.yEnd = parseFloat(document.getElementById('y4-extension').value) || 0;
+            
+            const lastNum = parseInt(yGrids[yGrids.length - 1]);
+            yGrids.push((lastNum + 1).toString());
+            yDistances.push('');
+            
+            renderYDimensions();
+            updateExtensionLabels();
+            
+            // Restore end extension value for new last grid
+            document.getElementById('y4-extension').value = extensionValues.yEnd;
+            
+            // Visual feedback
+            flashExtensionLabel('y4-extension-label');
+        }
+
+        // Update extension labels to match current last grid
+        function updateExtensionLabels() {
+            const lastX = xGrids[xGrids.length - 1];
+            const firstY = yGrids[0];
+            const lastY = yGrids[yGrids.length - 1];
+            
+            document.getElementById('a-extension-label').textContent = 
+                `A' to A extension (ft):`;
+            
+            document.getElementById('d-extension-label').textContent = 
+                `${lastX} to ${lastX}' extension (ft):`;
+            
+            document.getElementById('y1-extension-label').textContent = 
+                `${firstY}' to ${firstY} extension (ft):`;
+            
+            document.getElementById('y4-extension-label').textContent = 
+                `${lastY} to ${lastY}' extension (ft):`;
+        }
+
+        // Visual feedback for updated extensions
+        function flashExtensionLabel(id) {
+            const label = document.getElementById(id);
+            label.classList.add('extension-update');
+            setTimeout(() => label.classList.remove('extension-update'), 500);
+        }
+
+        // Calculate footing size
+        function calculateFootingSize(area) {
+            const loadFactor = parseFloat(document.getElementById('load-factor').value) || 0.25;
+            const density = parseFloat(document.getElementById('concrete-density').value) || 2.2;
+            const stories = parseFloat(document.getElementById('stories').value) || 2;
+            const soilBearing = parseFloat(document.getElementById('soil-bearing').value) || 1;
+            
+            const footing = Math.sqrt((area * loadFactor / density * stories) / soilBearing);
+            return Math.round(footing * 100) / 100;
+        }
+
+        // Main calculation function
+        function calculateAreas() {
+            // Get extensions
+            const aExt = parseFloat(document.getElementById('a-extension').value) || 0;
+            const dExt = parseFloat(document.getElementById('d-extension').value) || 0;
+            const y1Ext = parseFloat(document.getElementById('y1-extension').value) || 0;
+            const y4Ext = parseFloat(document.getElementById('y4-extension').value) || 0;
+            
+            // Update distances
+            for (let i = 0; i < xGrids.length - 1; i++) {
+                const input = document.getElementById(`x-dist-${i}`);
+                if (input) xDistances[i] = input.value;
+            }
+            
+            for (let i = 0; i < yGrids.length - 1; i++) {
+                const input = document.getElementById(`y-dist-${i}`);
+                if (input) yDistances[i] = input.value;
+            }
+            
+            // Convert to decimal feet
+            const xDec = xDistances.map(feetInchesToDecimal);
+            const yDec = yDistances.map(feetInchesToDecimal);
+            
+            // Generate results table
+            let tableHTML = '<table><tr><th></th>';
+            
+            // Header row
+            xGrids.forEach(x => tableHTML += `<th>${x}</th>`);
+            tableHTML += '</tr>';
+            
+            // Data rows
+            yGrids.forEach((y, yIdx) => {
+                tableHTML += `<tr><th>${y}</th>`;
+                
+                xGrids.forEach((x, xIdx) => {
+                    const grid = x + y;
+                    
+                    // Calculate width (left + right)
+                    let widthLeft = (xIdx === 0) ? aExt : xDec[xIdx-1] / 2;
+                    let widthRight = (xIdx === xGrids.length-1) ? dExt : xDec[xIdx] / 2;
+                    const totalWidth = widthLeft + widthRight;
+                    
+                    // Calculate height (top + bottom)
+                    let heightTop = (yIdx === 0) ? y1Ext : yDec[yIdx-1] / 2;
+                    let heightBottom = (yIdx === yGrids.length-1) ? y4Ext : yDec[yIdx] / 2;
+                    const totalHeight = heightTop + heightBottom;
+                    
+                    // Calculate area and footing
+                    const area = totalWidth * totalHeight;
+                    const roundedArea = Math.round(area * 100) / 100;
+                    const footing = calculateFootingSize(area);
+                    
+                    // Highlight edges/corners
+                    let cellClass = '';
+                    if ((x === 'A' || x === xGrids[xGrids.length-1]) && 
+                        (y === yGrids[0] || y === yGrids[yGrids.length-1])) {
+                        cellClass = 'highlight-corner';
+                    } else if (x === 'A' || x === xGrids[xGrids.length-1] || 
+                              y === yGrids[0] || y === yGrids[yGrids.length-1]) {
+                        cellClass = 'highlight-edge';
+                    }
+                    
+                    tableHTML += `
+                        <td class="${cellClass}">
+                            <strong>${grid}: ${roundedArea} sq ft</strong><br>
+                            <div class="footing-result">${footing} ft × ${footing} ft</div>
+                        </td>
+                    `;
+                });
+                
+                tableHTML += '</tr>';
+            });
+            
+            tableHTML += '</table>';
+            document.getElementById('result-table').innerHTML = tableHTML;
+        }
+    </script>
+</body>
+</html>
