@@ -120,19 +120,19 @@
         
         <label>Concrete Mix Ratio:</label>
         <select id="mixRatio">
-            <option value="1:1.5:3">1:1.5:3 (Cement:Sand:Aggregate)</option>
+            <option value="1:1.5:3" selected>1:1.5:3 (Cement:Sand:Aggregate)</option>
             <option value="1:2:4">1:2:4 (Cement:Sand:Aggregate)</option>
         </select>
 
         <label>Column Type:</label>
         <select id="columnType">
-            <option value="rectangular">Rectangular</option>
+            <option value="rectangular" selected>Rectangular</option>
             <option value="circular">Circular</option>
         </select>
 
         <label>Column Category:</label>
         <select id="columnCategory">
-            <option value="long">Long Column</option>
+            <option value="long" selected>Long Column</option>
             <option value="short">Short Column</option>
         </select>
 
@@ -297,19 +297,29 @@
                     alert("Please enter both X and Y dimensions");
                     return;
                 }
-                sizeDisplay = `${columnX}x${columnY}`;
                 
-                if (selectedColumnCategory === "short" && columnX === "12" && columnY === "12") {
-                    // Add 12x12 short column
-                    addColumnToTable(columnNos, columnName, selectedColumnType, 
-                                  "short", sizeDisplay, heights[0].height);
+                if (selectedColumnCategory === "short") {
+                    // For short rectangular columns, increase size by 3 inches on each side
+                    const shortX = parseInt(columnX) + 3;
+                    const shortY = parseInt(columnY) + 3;
+                    const shortSizeDisplay = `${shortX}x${shortY}`;
                     
-                    // Add 15x15 long column
+                    // Original size for long column
+                    const longSizeDisplay = `${columnX}x${columnY}`;
+                    
+                    // Add short column with increased size
                     addColumnToTable(columnNos, columnName, selectedColumnType, 
-                                  "long", "15x15", heights[1].height);
+                                  "short", shortSizeDisplay, heights[0].height);
+                    
+                    // Add long column with original dimensions
+                    addColumnToTable(columnNos, columnName, selectedColumnType, 
+                                  "long", longSizeDisplay, heights[1].height);
                     
                     clearInputs();
                     return;
+                } else {
+                    // For long columns, just use the entered dimensions
+                    sizeDisplay = `${columnX}x${columnY}`;
                 }
             } else {
                 const columnDia = document.getElementById("columnDia").value;
@@ -317,7 +327,28 @@
                     alert("Please enter diameter");
                     return;
                 }
-                sizeDisplay = `⌀${columnDia}`;
+                
+                if (selectedColumnCategory === "short") {
+                    // For short circular columns, increase diameter by 6 inches (3" on each side)
+                    const shortDia = parseInt(columnDia) + 3;
+                    const shortSizeDisplay = `⌀${shortDia}`;
+                    
+                    // Original size for long column
+                    const longSizeDisplay = `⌀${columnDia}`;
+                    
+                    // Add short column with increased diameter
+                    addColumnToTable(columnNos, columnName, selectedColumnType, 
+                                  "short", shortSizeDisplay, heights[0].height);
+                    
+                    // Add long column with original diameter
+                    addColumnToTable(columnNos, columnName, selectedColumnType, 
+                                  "long", longSizeDisplay, heights[1].height);
+                    
+                    clearInputs();
+                    return;
+                } else {
+                    sizeDisplay = `⌀${columnDia}`;
+                }
             }
             
             // Add one column for each height category
@@ -499,7 +530,7 @@
                     // Stirrup length calculation
                     const clearCover = 1.5;
                     const effectiveDia = columnDia - 2 * clearCover;
-                    stirrupLengthIn = Math.PI * effectiveDia + 6; // Adding 6 inches for hooks
+                    stirrupLengthIn = Math.PI * effectiveDia + 3; // Adding 6 inches for hooks
                 }
 
                 totalWetVolume = wetVolume * data.columnNos;
