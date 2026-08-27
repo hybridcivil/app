@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profit Sharing · Bonus Calculator</title>
+  <!-- Font Awesome (for icons) -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+      background: linear-gradient(135deg, #f6f9fc 0%, #e9f1f8 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 1.5rem;
+    }
+
+    .container {
+      max-width: 1100px;
+      width: 100%;
+      background: rgba(255, 255, 255, 0.85);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+      border-radius: 2.5rem;
+      padding: 2rem 2rem 2.5rem;
+      box-shadow: 0 25px 45px -12px rgba(0, 20, 40, 0.25), 0 2px 8px rgba(0,0,0,0.03);
+      border: 1px solid rgba(255,255,255,0.5);
+      transition: all 0.2s ease;
+    }
+
+    h2 {
+      font-size: 2.1rem;
+      font-weight: 600;
+      letter-spacing: -0.02em;
+      background: linear-gradient(145deg, #0b2b44, #1c4e6f);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.8rem;
+    }
+
+    h2 i {
+      background: #1c4e6f;
+      background: linear-gradient(145deg, #1a4b6b, #0d3147);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      font-size: 2rem;
+    }
+
+    .profit-area {
+      background: white;
+      padding: 1.4rem 1.8rem;
+      border-radius: 2rem;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 1.2rem 2rem;
+      box-shadow: 0 6px 18px rgba(0, 20, 30, 0.06);
+      margin-bottom: 2.2rem;
+      border: 1px solid rgba(0,0,0,0.02);
+    }
+
+    .profit-area label {
+      font-weight: 550;
+      color: #1a3a4f;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      font-size: 1.1rem;
+    }
+
+    .profit-area label i {
+      color: #2f7a9c;
+      font-size: 1.2rem;
+    }
+
+    .profit-area input {
+      flex: 1 1 180px;
+      padding: 0.7rem 1.2rem;
+      border-radius: 40px;
+      border: 1.5px solid #dce7f0;
+      background: #f8fbfe;
+      font-size: 1rem;
+      font-weight: 500;
+      color: #0b2b3f;
+      transition: 0.2s;
+      min-width: 120px;
+    }
+
+    .profit-area input:focus {
+      outline: none;
+      border-color: #2b7ca3;
+      box-shadow: 0 0 0 4px rgba(43, 124, 163, 0.15);
+      background: white;
+    }
+
+    .btn-primary {
+      background: linear-gradient(145deg, #1e5a7a, #13415a);
+      border: none;
+      color: white;
+      font-weight: 500;
+      padding: 0.7rem 1.8rem;
+      border-radius: 40px;
+      font-size: 1rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.6rem;
+      box-shadow: 0 6px 14px rgba(20, 70, 100, 0.25);
+      transition: all 0.2s;
+      cursor: pointer;
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+
+    .btn-primary:hover {
+      transform: scale(1.02);
+      box-shadow: 0 10px 20px rgba(19, 65, 90, 0.3);
+      background: linear-gradient(145deg, #20688b, #144f6b);
+    }
+
+    .btn-primary:active {
+      transform: scale(0.97);
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 1.5px solid #cbdbe8;
+      color: #1f4d69;
+      padding: 0.6rem 1.2rem;
+      border-radius: 40px;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: 0.2s;
+      cursor: pointer;
+      font-size: 0.95rem;
+    }
+
+    .btn-outline:hover {
+      background: #e4eef7;
+      border-color: #8fb4cc;
+      transform: translateY(-2px);
+    }
+
+    .btn-danger {
+      background: transparent;
+      border: none;
+      color: #a53f4a;
+      font-size: 0.95rem;
+      padding: 0.3rem 0.7rem;
+      border-radius: 30px;
+      transition: 0.15s;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+    }
+
+    .btn-danger:hover {
+      background: #ffeaed;
+      color: #b13e4b;
+      transform: scale(1.05);
+    }
+
+    .table-wrapper {
+      overflow-x: auto;
+      margin: 1.5rem 0 1.2rem;
+      border-radius: 1.5rem;
+      background: white;
+      padding: 0.1rem 0.1rem 0.1rem 0.1rem;
+      box-shadow: 0 8px 24px rgba(0, 20, 30, 0.04);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.95rem;
+      min-width: 480px;
+    }
+
+    th {
+      background: #f0f6fc;
+      color: #1b4057;
+      font-weight: 600;
+      padding: 1rem 0.5rem;
+      letter-spacing: 0.3px;
+      border-bottom: 2px solid #d6e2ed;
+    }
+
+    td {
+      padding: 0.6rem 0.3rem;
+      border-bottom: 1px solid #e9eef3;
+      vertical-align: middle;
+    }
+
+    tr:last-child td {
+      border-bottom: none;
+    }
+
+    td input {
+      width: 100%;
+      min-width: 70px;
+      padding: 0.6rem 0.6rem;
+      border: 1.5px solid #dde7f0;
+      border-radius: 30px;
+      background: #fafdff;
+      font-size: 0.9rem;
+      transition: 0.15s;
+      text-align: center;
+    }
+
+    td input:focus {
+      outline: none;
+      border-color: #3082a8;
+      box-shadow: 0 0 0 3px rgba(43, 124, 163, 0.1);
+      background: white;
+    }
+
+    td input[placeholder] {
+      text-align: left;
+      padding-left: 1rem;
+    }
+
+    .action-cell {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 0.2rem;
+    }
+
+    .add-employee-area {
+      display: flex;
+      justify-content: flex-start;
+      margin: 0.5rem 0 1.8rem;
+    }
+
+    .result-section {
+      background: white;
+      border-radius: 2rem;
+      padding: 1.2rem 0.2rem 0.6rem;
+      margin-top: 1.8rem;
+      box-shadow: 0 6px 18px rgba(0, 0, 0, 0.02);
+    }
+
+    .result-section h3 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: #153e57;
+      padding-left: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+      margin-bottom: 0.8rem;
+    }
+
+    .result-section h3 i {
+      color: #2d789b;
+    }
+
+    #resultTable {
+      font-size: 0.92rem;
+    }
+
+    #resultTable th {
+      background: #e3eef8;
+      color: #14445e;
+    }
+
+    #resultTable td {
+      padding: 0.7rem 0.3rem;
+    }
+
+    #resultTable tr:last-child td {
+      border-bottom: none;
+    }
+
+    #resultTable b {
+      font-weight: 600;
+      color: #0c3349;
+    }
+
+    .total-row td {
+      background: #f6faff;
+      font-weight: 500;
+    }
+
+    .extra-profit {
+      background: #e2f0f9;
+    }
+
+    @media (max-width: 680px) {
+      .container {
+        padding: 1.5rem 1rem;
+      }
+      h2 {
+        font-size: 1.6rem;
+      }
+      .profit-area {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .btn-primary {
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      td input {
+        min-width: 50px;
+        font-size: 0.8rem;
+        padding: 0.4rem 0.3rem;
+      }
+      .action-cell {
+        flex-wrap: wrap;
+      }
+    }
+
+    /* small aesthetic touches */
+    .fa-trash-alt {
+      pointer-events: none;
+    }
+
+    .btn-outline i, .btn-primary i {
+      font-size: 1rem;
+    }
+
+    .container {
+      transition: 0.25s ease;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h2>
+    <i class="fas fa-chart-pie"></i> 
+    Profit Sharing · Bonus
+  </h2>
+
+  <!-- Net profit input -->
+  <div class="profit-area">
+    <label for="profit"><i class="fas fa-coins"></i> Net Profit (Tk)</label>
+    <input type="number" id="profit" value="85000" step="100">
+    <button class="btn-primary" onclick="calculate()">
+      <i class="fas fa-calculator"></i> Calculate
+    </button>
+  </div>
+
+  <!-- Employee table -->
+  <div style="display: flex; justify-content: space-between; align-items: baseline; flex-wrap: wrap; gap: 0.5rem 1rem;">
+    <h3 style="color: #1f4f6b; font-weight: 550; font-size: 1.3rem; display: flex; align-items: center; gap: 0.5rem;">
+      <i class="fas fa-users" style="color: #236783;"></i> Employees
+    </h3>
+    <button class="btn-outline" onclick="addEmployee()">
+      <i class="fas fa-plus-circle"></i> Add employee
+    </button>
+  </div>
+
+  <div class="table-wrapper">
+    <table id="empTable">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Salary (Tk)</th>
+          <th style="width: 110px;">Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><input value="Engineer" placeholder="Name"></td>
+          <td><input type="number" value="60000"></td>
+          <td><div class="action-cell"><button class="btn-danger" onclick="removeRow(this)"><i class="fas fa-trash-alt"></i> Delete</button></div></td>
+        </tr>
+        <tr>
+          <td><input value="Manager" placeholder="Name"></td>
+          <td><input type="number" value="25000"></td>
+          <td><div class="action-cell"><button class="btn-danger" onclick="removeRow(this)"><i class="fas fa-trash-alt"></i> Delete</button></div></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Result -->
+  <div class="result-section">
+    <h3><i class="fas fa-file-invoice"></i> Breakdown</h3>
+    <div class="table-wrapper" style="box-shadow: none; padding: 0 0.2rem;">
+      <table id="resultTable">
+        <!-- dynamic content -->
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+  function addEmployee() {
+    const table = document.getElementById("empTable").getElementsByTagName('tbody')[0];
+    const row = table.insertRow();
+    row.innerHTML = `
+      <td><input placeholder="Employee" value=""></td>
+      <td><input type="number" value="0"></td>
+      <td><div class="action-cell"><button class="btn-danger" onclick="removeRow(this)"><i class="fas fa-trash-alt"></i> Delete</button></div></td>
+    `;
+  }
+
+  function removeRow(btn) {
+    const row = btn.closest('tr');
+    if (row && row.parentNode) {
+      row.remove();
+    }
+  }
+
+  function calculate() {
+    const table = document.getElementById("empTable");
+    const tbody = table.getElementsByTagName('tbody')[0];
+    const rows = tbody ? tbody.rows : [];
+    
+    const employees = [];
+    let totalSalary = 0;
+
+    for (let i = 0; i < rows.length; i++) {
+      const row = rows[i];
+      const nameInput = row.cells[0]?.querySelector('input');
+      const salaryInput = row.cells[1]?.querySelector('input');
+      if (!nameInput || !salaryInput) continue;
+      const name = nameInput.value.trim() || 'Unnamed';
+      const salary = parseFloat(salaryInput.value) || 0;
+      employees.push({ name, salary });
+      totalSalary += salary;
+    }
+
+    const profitInput = document.getElementById("profit");
+    const profit = parseFloat(profitInput.value) || 0;
+
+    let html = `
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Salary</th>
+          <th>Bonus</th>
+          <th>Total Receive</th>
+        </tr>
+      </thead>
+      <tbody>
+    `;
+
+    if (employees.length === 0) {
+      html += `<tr><td colspan="4" style="padding:1.2rem; color:#6b7f8e;">No employees added.</td></tr>`;
+    } else {
+      employees.forEach(emp => {
+        const ratio = totalSalary > 0 ? emp.salary / totalSalary : 0;
+        let salaryPaid = 0;
+        let bonus = 0;
+
+        if (profit < totalSalary) {
+          salaryPaid = profit * ratio;
+        } else {
+          salaryPaid = emp.salary;
+          bonus = (profit - totalSalary) * ratio;
+        }
+
+        const totalReceive = salaryPaid + bonus;
+        html += `
+          <tr>
+            <td><strong>${emp.name}</strong></td>
+            <td>${emp.salary.toFixed(2)}</td>
+            <td>${bonus.toFixed(2)}</td>
+            <td><b>${totalReceive.toFixed(2)}</b></td>
+          </tr>
+        `;
+      });
+
+      // summary rows
+      const extraProfit = Math.max(0, profit - totalSalary);
+      html += `
+        <tr class="total-row">
+          <td colspan="3"><b>Total Salary</b></td>
+          <td><b>${totalSalary.toFixed(2)}</b></td>
+        </tr>
+        <tr class="total-row">
+          <td colspan="3"><b>Net Profit</b></td>
+          <td><b>${profit.toFixed(2)}</b></td>
+        </tr>
+        <tr class="total-row extra-profit">
+          <td colspan="3"><b>Extra Profit</b></td>
+          <td><b>${extraProfit.toFixed(2)}</b></td>
+        </tr>
+      `;
+    }
+
+    html += `</tbody>`;
+    document.getElementById("resultTable").innerHTML = html;
+  }
+
+  // initial calculation on load
+  window.addEventListener('DOMContentLoaded', calculate);
+</script>
+
+</body>
+</html>
