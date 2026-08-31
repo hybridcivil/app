@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#111827"><title>Investor Pro Manager</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{margin:0;background:#edf1f5;font-family:Arial,sans-serif;color:#17202a}.app{max-width:480px;min-height:100vh;margin:auto;background:#f8fafc;padding-bottom:76px}.top{background:#111827;color:white;padding:20px 16px 25px;border-radius:0 0 24px 24px}.brand{font-size:12px;opacity:.65;font-weight:bold;letter-spacing:1px}.title{font-size:23px;font-weight:800;margin-top:5px}.hero{margin-top:20px}.hero small{opacity:.65}.hero b{display:block;font-size:29px;margin-top:5px}.content{padding:13px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:-25px}.stat,.card{background:white;border-radius:17px;box-shadow:0 4px 16px #0000000b}.stat{padding:14px}.stat small{color:#667085;font-size:11px}.stat b{display:block;font-size:17px;margin-top:5px}.card{padding:15px;margin-top:13px}.card h2{font-size:17px;margin:0 0 13px}.section{display:none}.section.active{display:block}label{font-size:12px;font-weight:700;color:#475467;display:block;margin:9px 0 5px}input,select{width:100%;padding:12px;border:1px solid #d0d5dd;border-radius:11px;background:white;font-size:15px;outline:none}.row{display:grid;grid-template-columns:1fr 1fr;gap:9px}.buttons{display:flex;gap:8px;flex-wrap:wrap;margin-top:11px}button{border:0;border-radius:11px;padding:12px 14px;font-weight:800;cursor:pointer}.primary{background:#111827;color:white}.light{background:#eef1f5;color:#111827}.red{background:#fee4e2;color:#b42318}.full{width:100%}.item{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #edf0f2}.item:last-child{border:0}.avatar{width:40px;height:40px;border-radius:12px;background:#e8ecf1;display:grid;place-items:center;font-weight:800;margin-right:10px}.info{flex:1}.info b{font-size:14px}.info small{display:block;color:#667085;margin-top:4px}.right{text-align:right}.right b{font-size:14px}.right small{display:block;color:#667085;margin-top:3px}.pill{display:inline-block;padding:4px 7px;border-radius:20px;background:#eef1f5;font-size:10px;margin-top:4px}.statement{background:#f5f7f9;padding:12px;border-radius:12px;margin-top:10px}.statement div{display:flex;justify-content:space-between;padding:5px 0;font-size:13px}.statement b{font-size:14px}.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);height:68px;background:white;border-top:1px solid #e5e7eb;display:flex;justify-content:space-around;z-index:10}.nav{background:none;color:#98a2b3;padding:7px 10px;font-size:10px;display:flex;flex-direction:column;align-items:center;gap:3px}.nav span{font-size:20px}.nav.active{color:#111827}.empty{text-align:center;color:#667085;padding:18px}.toast{position:fixed;bottom:82px;left:50%;transform:translateX(-50%);background:#111827;color:white;padding:10px 14px;border-radius:10px;font-size:12px;display:none;z-index:20}
+@media(min-width:481px){.bottom{position:absolute}}
+</style>
+</head>
+<body><div class="app">
+<header class="top"><div class="brand">INVESTOR PRO</div><div class="title">Business Dashboard</div><div class="hero"><small>Total Business Value</small><b id="hero">Tk 0.00</b></div></header>
+<main class="content">
+<section id="dashboard" class="section active">
+<div class="grid"><div class="stat"><small>Capital</small><b id="dCap">Tk 0</b></div><div class="stat"><small>Profit</small><b id="dProfit">Tk 0</b></div><div class="stat"><small>Paid Profit</small><b id="dPaid">Tk 0</b></div><div class="stat"><small>Investors</small><b id="dCount">0</b></div></div>
+<div class="card"><h2>Recent Activity</h2><div id="recent"></div></div></section>
+
+<section id="investors" class="section"><div class="card"><h2>Investors</h2><div id="investorList"></div><button class="primary full" onclick="openAdd()">＋ Add Investor</button></div></section>
+
+<section id="transactions" class="section"><div class="card"><h2>New Transaction</h2>
+<label>Investor</label><select id="txInvestor"></select>
+<div class="row"><div><label>Type</label><select id="txType"><option value="investment">Investment</option><option value="profit">Profit Entry</option><option value="withdrawal">Withdrawal</option><option value="profitPaid">Profit Paid</option></select></div><div><label>Amount (Tk)</label><input id="txAmount" type="number" min="0" step=".01"></div></div>
+<label>Date</label><input id="txDate" type="date"><label>Note</label><input id="txNote" placeholder="Optional note"><button class="primary full" onclick="addTransaction()">Save Transaction</button></div>
+<div class="card"><h2>Transaction History</h2><div id="history"></div></div></section>
+
+<section id="statement" class="section"><div class="card"><h2>Investor Statement</h2><label>Select Investor</label><select id="statementInvestor" onchange="renderStatement()"></select><div id="statementBody"></div></div></section>
+
+<section id="reports" class="section"><div class="card"><h2>Reports & Backup</h2><div class="statement"><div><span>Total Investments</span><b id="rInv">Tk 0</b></div><div><span>Total Profit Entries</span><b id="rProfit">Tk 0</b></div><div><span>Total Withdrawals</span><b id="rWith">Tk 0</b></div><div><span>Total Profit Paid</span><b id="rPaid">Tk 0</b></div></div><div class="buttons"><button class="light" onclick="exportData()">⬇ Backup</button><button class="light" onclick="document.getElementById('file').click()">⬆ Restore</button><button class="red" onclick="clearData()">Reset All</button></div><input id="file" type="file" accept=".json" style="display:none" onchange="importData(event)"></div></section>
+</main>
+<nav class="bottom">
+<button class="nav active" onclick="tab('dashboard',this)"><span>⌂</span>Home</button><button class="nav" onclick="tab('investors',this)"><span>♙</span>Investors</button><button class="nav" onclick="tab('transactions',this)"><span>＋</span>Transactions</button><button class="nav" onclick="tab('statement',this)"><span>▤</span>Statement</button><button class="nav" onclick="tab('reports',this)"><span>⚙</span>Reports</button>
+</nav></div><div id="toast" class="toast"></div>
+
+<script>
+const KEY="investorProV1";let data=JSON.parse(localStorage.getItem(KEY)||"null")||{
+ investors:[{id:1,name:"Kabir"},{id:2,name:"Sakil"}],
+ tx:[{id:1,investor:1,type:"investment",amount:12000,date:"2026-09-01",note:"Initial investment"},{id:2,investor:2,type:"investment",amount:16000,date:"2026-09-01",note:"Initial investment"},{id:3,investor:1,type:"profit",amount:428.57,date:"2026-09-01",note:"Profit distribution"},{id:4,investor:2,type:"profit",amount:571.43,date:"2026-09-01",note:"Profit distribution"}]};
+const money=n=>"Tk "+Number(n||0).toLocaleString("en-BD",{minimumFractionDigits:2,maximumFractionDigits:2});
+const save=()=>localStorage.setItem(KEY,JSON.stringify(data));
+const inv=id=>data.investors.find(x=>x.id==id);
+function toast(s){let t=document.getElementById("toast");t.textContent=s;t.style.display="block";setTimeout(()=>t.style.display="none",1600)}
+function totals(){
+ let cap=0,profit=0,paid=0,withdraw=0;
+ data.tx.forEach(x=>{if(x.type=="investment")cap+=+x.amount;if(x.type=="profit")profit+=+x.amount;if(x.type=="profitPaid")paid+=+x.amount;if(x.type=="withdrawal")withdraw+=+x.amount});
+ return {cap,profit,paid,withdraw,total:cap+profit-withdraw};
+}
+function tab(id,btn){document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));btn.classList.add("active");render()}
+function render(){
+ let t=totals();hero.textContent=money(t.total);dCap.textContent=money(t.cap);dProfit.textContent=money(t.profit);dPaid.textContent=money(t.paid);dCount.textContent=data.investors.length;
+ let options=data.investors.map(x=>`<option value="${x.id}">${esc(x.name)}</option>`).join("");txInvestor.innerHTML=options;statementInvestor.innerHTML=options;
+ investorList.innerHTML=data.investors.map(x=>{let c=data.tx.filter(z=>z.investor==x.id&&z.type=="investment").reduce((s,z)=>s+ +z.amount,0),p=data.tx.filter(z=>z.investor==x.id&&z.type=="profit").reduce((s,z)=>s+ +z.amount,0);return `<div class="item"><div class="avatar">${esc(x.name[0]||"?")}</div><div class="info"><b>${esc(x.name)}</b><small>Capital ${money(c)}</small></div><div class="right"><b>${money(p)}</b><small>profit</small></div></div>`}).join("")||'<div class="empty">No investors</div>';
+ history.innerHTML=data.tx.slice().reverse().map(x=>`<div class="item"><div class="avatar">${x.type[0].toUpperCase()}</div><div class="info"><b>${esc(inv(x.investor)?.name||"Unknown")}</b><small>${esc(x.note||x.type)} · ${x.date}</small></div><div class="right"><b>${money(x.amount)}</b><small>${x.type}</small></div></div>`).join("");
+ recent.innerHTML=data.tx.slice(-5).reverse().map(x=>`<div class="item"><div class="info"><b>${esc(inv(x.investor)?.name||"Unknown")}</b><small>${x.type} · ${x.date}</small></div><div class="right"><b>${money(x.amount)}</b></div></div>`).join("");
+ rInv.textContent=money(t.cap);rProfit.textContent=money(t.profit);rWith.textContent=money(t.withdraw);rPaid.textContent=money(t.paid);renderStatement();
+}
+function renderStatement(){
+ let id=statementInvestor.value,x=inv(id);if(!x){statementBody.innerHTML="";return}
+ let rows=data.tx.filter(z=>z.investor==id),capital=0,profit=0,withdraw=0,paid=0;
+ rows.forEach(z=>{if(z.type=="investment")capital+=+z.amount;if(z.type=="profit")profit+=+z.amount;if(z.type=="withdrawal")withdraw+=+z.amount;if(z.type=="profitPaid")paid+=+z.amount});
+ statementBody.innerHTML=`<div class="statement"><div><span>Investor</span><b>${esc(x.name)}</b></div><div><span>Capital</span><b>${money(capital)}</b></div><div><span>Profit Earned</span><b>${money(profit)}</b></div><div><span>Profit Paid</span><b>${money(paid)}</b></div><div><span>Withdrawals</span><b>${money(withdraw)}</b></div><div><span>Current Value</span><b>${money(capital+profit-withdraw-paid)}</b></div></div><h3 style="font-size:14px">Ledger</h3>`+rows.slice().reverse().map(z=>`<div class="item"><div class="info"><b>${z.type}</b><small>${z.date} · ${esc(z.note||"")}</small></div><div class="right"><b>${money(z.amount)}</b></div></div>`).join("");
+}
+function openAdd(){let n=prompt("Investor name:");if(!n?.trim())return;data.investors.push({id:Date.now(),name:n.trim()});save();render();toast("Investor added")}
+function addTransaction(){let id=+txInvestor.value,a=+txAmount.value;if(!a||a<0)return toast("Enter a valid amount");data.tx.push({id:Date.now(),investor:id,type:txType.value,amount:a,date:txDate.value||new Date().toISOString().slice(0,10),note:txNote.value.trim()});save();txAmount.value="";txNote.value="";render();toast("Transaction saved")}
+function exportData(){let blob=new Blob([JSON.stringify(data,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="investor-backup.json";a.click();URL.revokeObjectURL(a.href);toast("Backup created")}
+function importData(e){let f=e.target.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{data=JSON.parse(r.result);save();render();toast("Backup restored")}catch{toast("Invalid backup")}};r.readAsText(f)}
+function clearData(){if(confirm("Delete all investors and transactions?")){data={investors:[],tx:[]};save();render();toast("All data reset")}}
+function esc(s){return String(s??"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]))}
+txDate.value=new Date().toISOString().slice(0,10);render();
+</script></body></html>
