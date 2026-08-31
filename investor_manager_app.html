@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#111827">
+<title>Investor Manager</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;background:#eef1f5;font-family:Inter,Arial,sans-serif;color:#17202a}
+.app{max-width:480px;min-height:100vh;margin:auto;background:#f8fafc;position:relative;padding-bottom:82px}
+header{background:#111827;color:#fff;padding:22px 18px 28px;border-radius:0 0 24px 24px}
+.top{display:flex;justify-content:space-between;align-items:center}
+h1{font-size:22px;margin:0}.hello{font-size:13px;opacity:.7;margin-bottom:5px}
+.icon{width:42px;height:42px;border-radius:14px;background:#293241;display:grid;place-items:center;font-size:20px}
+.balance{margin-top:22px}.balance small{opacity:.7}.balance b{display:block;font-size:30px;margin-top:4px}
+.content{padding:14px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:-28px}
+.stat{background:#fff;padding:15px;border-radius:16px;box-shadow:0 4px 15px #0000000c}
+.stat small{color:#667085;font-size:12px}.stat b{display:block;font-size:18px;margin-top:6px}
+.card{background:#fff;border-radius:18px;padding:16px;margin-top:14px;box-shadow:0 4px 15px #0000000a}
+.card h2{font-size:17px;margin:0 0 13px}
+.investor{display:flex;align-items:center;padding:11px 0;border-bottom:1px solid #edf0f2}
+.investor:last-child{border:0}.avatar{width:42px;height:42px;border-radius:13px;background:#e9edf2;display:grid;place-items:center;font-weight:800;margin-right:11px}
+.info{flex:1}.info b{font-size:14px}.info small{display:block;color:#667085;margin-top:4px}
+.amount{text-align:right}.amount b{display:block;font-size:14px}.amount small{color:#667085}
+label{display:block;font-size:12px;font-weight:700;color:#475467;margin:11px 0 6px}
+input{width:100%;border:1px solid #d0d5dd;border-radius:12px;padding:13px;font-size:16px;outline:none;background:#fff}
+input:focus{border-color:#111827}
+.row{display:grid;grid-template-columns:1fr 1fr auto;gap:8px;align-items:end;margin-bottom:8px}
+button{border:0;border-radius:12px;padding:13px 15px;font-weight:800;font-size:14px}
+.primary{background:#111827;color:#fff;width:100%;margin-top:12px}
+.add{background:#eef1f5;color:#111827}
+.delete{background:#fee4e2;color:#b42318;padding:12px}
+.result{display:grid;grid-template-columns:1fr 1fr;gap:9px;margin-top:12px}
+.result div{background:#f5f7f9;border-radius:13px;padding:12px}.result small{display:block;color:#667085}.result b{display:block;margin-top:5px}
+.bottom{position:fixed;bottom:0;left:50%;transform:translateX(-50%);width:min(480px,100%);height:70px;background:#fff;border-top:1px solid #e5e7eb;display:flex;justify-content:space-around;z-index:5}
+.nav{border:0;background:none;color:#98a2b3;font-size:11px;display:flex;flex-direction:column;gap:4px;align-items:center;padding:9px 18px}.nav span{font-size:20px}.nav.active{color:#111827;font-weight:800}
+.section{display:none}.section.active{display:block}
+.empty{text-align:center;color:#667085;padding:18px}
+@media(min-width:481px){.bottom{position:absolute}}
+</style>
+</head>
+<body>
+<div class="app">
+<header>
+  <div class="top">
+    <div><div class="hello">INVESTOR MANAGER</div><h1>Profit Dashboard</h1></div>
+    <div class="icon">৳</div>
+  </div>
+  <div class="balance"><small>Total Return</small><b id="headerReturn">Tk 29,000.00</b></div>
+</header>
+
+<main class="content">
+<section id="home" class="section active">
+  <div class="grid">
+    <div class="stat"><small>Total Investment</small><b id="dashInvestment">Tk 28,000</b></div>
+    <div class="stat"><small>Total Profit</small><b id="dashProfit">Tk 1,000</b></div>
+  </div>
+  <div class="card">
+    <h2>Investors</h2>
+    <div id="homeInvestors"></div>
+  </div>
+</section>
+
+<section id="calculate" class="section">
+  <div class="card">
+    <h2>Profit Calculator</h2>
+    <label>Total Profit (Tk)</label>
+    <input id="profit" type="number" value="1000" min="0" step=".01" oninput="calculate()">
+    <div id="investors"></div>
+    <button class="add" onclick="addInvestor()">＋ Add Investor</button>
+    <button class="primary" onclick="calculate()">Calculate Distribution</button>
+    <div class="result">
+      <div><small>Total Investment</small><b id="totalInv">Tk 0</b></div>
+      <div><small>Total Profit</small><b id="totalProf">Tk 0</b></div>
+      <div><small>Total Return</small><b id="totalRet">Tk 0</b></div>
+      <div><small>Investors</small><b id="count">0</b></div>
+    </div>
+  </div>
+  <div class="card">
+    <h2>Profit Distribution</h2>
+    <div id="distribution"></div>
+  </div>
+</section>
+
+<section id="investorsPage" class="section">
+  <div class="card">
+    <h2>All Investors</h2>
+    <div id="allInvestors"></div>
+  </div>
+</section>
+</main>
+
+<nav class="bottom">
+ <button class="nav active" onclick="showTab('home',this)"><span>⌂</span>Home</button>
+ <button class="nav" onclick="showTab('calculate',this)"><span>◉</span>Calculate</button>
+ <button class="nav" onclick="showTab('investorsPage',this)"><span>♙</span>Investors</button>
+</nav>
+</div>
+
+<script>
+let investors=[
+ {name:"Kabir",amount:12000},
+ {name:"Sakil",amount:16000}
+];
+
+const money=n=>"Tk "+Number(n).toLocaleString("en-BD",{minimumFractionDigits:2,maximumFractionDigits:2});
+const safe=s=>String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#039;"}[m]));
+
+function renderInputs(){
+ const box=document.getElementById("investors"); box.innerHTML="";
+ investors.forEach((x,i)=>{
+  box.innerHTML+=`<div class="row">
+   <div><label>Name</label><input value="${safe(x.name)}" oninput="investors[${i}].name=this.value;calculate()"></div>
+   <div><label>Investment</label><input type="number" min="0" value="${x.amount}" oninput="investors[${i}].amount=parseFloat(this.value)||0;calculate()"></div>
+   <button class="delete" onclick="removeInvestor(${i})">×</button>
+  </div>`;
+ });
+ calculate();
+}
+function addInvestor(){investors.push({name:"New Investor",amount:0});renderInputs();}
+function removeInvestor(i){if(investors.length>1){investors.splice(i,1);renderInputs();}}
+function calculate(){
+ const profit=parseFloat(document.getElementById("profit").value)||0;
+ const total=investors.reduce((s,x)=>s+(+x.amount||0),0);
+ document.getElementById("totalInv").textContent=money(total);
+ document.getElementById("totalProf").textContent=money(profit);
+ document.getElementById("totalRet").textContent=money(total+profit);
+ document.getElementById("count").textContent=investors.length;
+ document.getElementById("dashInvestment").textContent=money(total);
+ document.getElementById("dashProfit").textContent=money(profit);
+ document.getElementById("headerReturn").textContent=money(total+profit);
+
+ let d="";
+ investors.forEach(x=>{
+  const a=+x.amount||0,p=total?profit*a/total:0;
+  d+=`<div class="investor"><div class="avatar">${safe((x.name||"?").charAt(0).toUpperCase())}</div><div class="info"><b>${safe(x.name)}</b><small>${total?(a/total*100).toFixed(2):"0.00"}% share</small></div><div class="amount"><b>${money(p)}</b><small>profit</small></div></div>`;
+ });
+ document.getElementById("distribution").innerHTML=d||'<div class="empty">No investors</div>';
+ renderLists();
+}
+function renderLists(){
+ const make=()=>investors.map(x=>`<div class="investor"><div class="avatar">${safe((x.name||"?").charAt(0).toUpperCase())}</div><div class="info"><b>${safe(x.name)}</b><small>Investment</small></div><div class="amount"><b>${money(+x.amount||0)}</b></div></div>`).join("");
+ document.getElementById("homeInvestors").innerHTML=make();
+ document.getElementById("allInvestors").innerHTML=make();
+}
+function showTab(id,btn){
+ document.querySelectorAll(".section").forEach(x=>x.classList.remove("active"));
+ document.getElementById(id).classList.add("active");
+ document.querySelectorAll(".nav").forEach(x=>x.classList.remove("active"));
+ btn.classList.add("active");
+}
+renderInputs();
+</script>
+</body>
+</html>
