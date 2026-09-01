@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Building Cost Calculator (BD)</title>
+<style>
+  :root {
+    --primary: #0f766e;
+    --primary-dark: #0d5c56;
+    --bg: #f0fdfa;
+    --card: #ffffff;
+    --text: #134e4a;
+    --muted: #5eead4;
+    --border: #99f6e4;
+    --danger: #dc2626;
+    --success: #059669;
+    --font-scale: 1;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+    background: linear-gradient(135deg, #f0fdfa 0%, #ccfbf1 100%);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    font-size: calc(1rem * var(--font-scale));
+  }
+  .container {
+    max-width: 960px;
+    margin: 0 auto;
+  }
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+  header h1 {
+    font-size: calc(1.85rem * var(--font-scale));
+    font-weight: 700;
+    color: var(--primary-dark);
+  }
+  header p {
+    color: #0f766e;
+    margin-top: 6px;
+    font-size: calc(0.95rem * var(--font-scale));
+  }
+  .card {
+    background: var(--card);
+    border-radius: 16px;
+    box-shadow: 0 10px 30px -8px rgba(15, 118, 110, 0.15);
+    padding: calc(24px * var(--font-scale));
+    margin-bottom: 20px;
+    border: 1px solid var(--border);
+  }
+  .card h2 {
+    font-size: calc(1.15rem * var(--font-scale));
+    margin-bottom: calc(16px * var(--font-scale));
+    color: var(--primary-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: calc(16px * var(--font-scale));
+  }
+  label {
+    display: block;
+    font-size: calc(0.85rem * var(--font-scale));
+    font-weight: 600;
+    margin-bottom: calc(6px * var(--font-scale));
+    color: #0f766e;
+  }
+  input, select {
+    width: 100%;
+    padding: calc(10px * var(--font-scale)) calc(12px * var(--font-scale));
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    font-size: calc(1rem * var(--font-scale));
+    background: #f8fffe;
+    transition: border-color 0.2s;
+  }
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(15, 118, 110, 0.15);
+  }
+  .btn-row {
+    display: flex;
+    gap: calc(12px * var(--font-scale));
+    margin-top: calc(20px * var(--font-scale));
+    flex-wrap: wrap;
+  }
+  button {
+    padding: calc(12px * var(--font-scale)) calc(24px * var(--font-scale));
+    border: none;
+    border-radius: 10px;
+    font-size: calc(1rem * var(--font-scale));
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary {
+    background: var(--primary);
+    color: white;
+  }
+  .btn-primary:hover {
+    background: var(--primary-dark);
+    transform: translateY(-1px);
+  }
+  .btn-secondary {
+    background: #e0f2f1;
+    color: var(--primary-dark);
+  }
+  .btn-secondary:hover {
+    background: #b2dfdb;
+  }
+  .btn-font {
+    background: #f1f5f9;
+    color: #1e293b;
+    padding: calc(8px * var(--font-scale)) calc(16px * var(--font-scale));
+  }
+  .btn-font:hover {
+    background: #e2e8f0;
+  }
+  .font-controls {
+    display: flex;
+    align-items: center;
+    gap: calc(10px * var(--font-scale));
+    margin-left: auto;
+  }
+  .font-controls span {
+    font-size: calc(0.8rem * var(--font-scale));
+    color: #64748b;
+  }
+  .results {
+    display: none;
+  }
+  .results.show {
+    display: block;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: calc(0.95rem * var(--font-scale));
+  }
+  th, td {
+    padding: calc(10px * var(--font-scale)) calc(12px * var(--font-scale));
+    text-align: left;
+    border-bottom: 1px solid #e0f2f1;
+  }
+  th {
+    background: #f0fdfa;
+    font-weight: 600;
+    color: var(--primary-dark);
+  }
+  tr:last-child td {
+    border-bottom: none;
+  }
+  .total-row {
+    background: #ecfdf5;
+    font-weight: 700;
+    font-size: calc(1.05rem * var(--font-scale));
+  }
+  .total-row td {
+    color: var(--success);
+  }
+  .note {
+    font-size: calc(0.8rem * var(--font-scale));
+    color: #64748b;
+    margin-top: calc(12px * var(--font-scale));
+    line-height: 1.4;
+  }
+  .badge {
+    display: inline-block;
+    background: #ccfbf1;
+    color: var(--primary-dark);
+    padding: 2px 8px;
+    border-radius: 20px;
+    font-size: calc(0.75rem * var(--font-scale));
+    font-weight: 600;
+  }
+  .summary-box {
+    background: linear-gradient(135deg, #0f766e, #0d9488);
+    color: white;
+    border-radius: 12px;
+    padding: calc(18px * var(--font-scale)) calc(20px * var(--font-scale));
+    margin-bottom: calc(16px * var(--font-scale));
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 10px;
+  }
+  .summary-box .label {
+    font-size: calc(0.9rem * var(--font-scale));
+    opacity: 0.9;
+  }
+  .summary-box .value {
+    font-size: calc(1.6rem * var(--font-scale));
+    font-weight: 700;
+  }
+  footer {
+    text-align: center;
+    margin-top: 30px;
+    font-size: calc(0.8rem * var(--font-scale));
+    color: #64748b;
+  }
+  .header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  @media (max-width: 560px) {
+    header h1 { font-size: calc(1.45rem * var(--font-scale)); }
+    .card { padding: calc(18px * var(--font-scale)); }
+    .grid { grid-template-columns: 1fr; }
+    .summary-box .value { font-size: calc(1.2rem * var(--font-scale)); }
+    .font-controls { margin-left: 0; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <div class="header-row">
+      <div>
+        <h1>🏗️ Building Cost Calculator</h1>
+        <p>Soil Test · Design · Municipality Fees (Bangladesh TK)</p>
+      </div>
+      <div class="font-controls">
+        <span>🔤 Font</span>
+        <button class="btn-font" onclick="changeFont(-0.1)" title="Smaller font">A-</button>
+        <button class="btn-font" onclick="changeFont(0)" title="Reset font">A</button>
+        <button class="btn-font" onclick="changeFont(0.1)" title="Larger font">A+</button>
+        <span id="fontScaleDisplay" style="font-weight:600;min-width:40px;">1.0×</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- INPUTS -->
+  <div class="card">
+    <h2>📋 Project Inputs</h2>
+    <div class="grid">
+      <div>
+        <label for="landArea">Land Area (sft) <small style="font-weight:400;color:#64748b;">(for soil test)</small></label>
+        <input type="number" id="landArea" value="3200" min="100" step="50">
+      </div>
+      <div>
+        <label for="perFloorSft">Area per Floor (sft)</label>
+        <input type="number" id="perFloorSft" value="1500" min="100" step="50">
+      </div>
+      <div>
+        <label for="storeys">Number of Storeys</label>
+        <input type="number" id="storeys" value="5" min="1" max="20">
+      </div>
+      <div>
+        <label for="depth">Boring Depth (ft)</label>
+        <select id="depth">
+          <option value="60">60 ft (3,000 TK)</option>
+          <option value="100">100 ft (6,000 TK)</option>
+          <option value="custom">Custom depth</option>
+        </select>
+      </div>
+      <div id="customDepthWrap" style="display:none;">
+        <label for="customDepth">Custom Depth (ft)</label>
+        <input type="number" id="customDepth" value="80" min="30" max="150">
+      </div>
+    </div>
+
+    <div class="btn-row">
+      <button class="btn-primary" onclick="calculate()">Calculate Cost</button>
+      <button class="btn-secondary" onclick="resetForm()">Reset</button>
+    </div>
+  </div>
+
+  <!-- RESULTS -->
+  <div class="card results" id="results">
+    <div class="summary-box">
+      <div>
+        <div class="label">Grand Total (All Costs)</div>
+        <div class="value" id="grandTotal">0 TK</div>
+      </div>
+      <div style="text-align:right;">
+        <span class="badge" id="boringBadge">0 borings</span>
+      </div>
+    </div>
+
+    <h2>💰 Detailed Breakdown</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Item</th>
+          <th>Calculation</th>
+          <th style="text-align:right;">Amount (TK)</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+    <p class="note">
+      • <strong>Soil Test / Boring</strong> is calculated from <strong>Land Area</strong> only (1 boring per 720 sft, rounded up).<br>
+      • Total Floor Area = Area per Floor × Number of Storeys (used for Municipality fee).<br>
+      • Design costs are based on 5-storey rates and adjusted ±10 % per storey difference.<br>
+      • Municipality fee: first 500 sft @ 2 TK + remaining @ 1.5 TK + 1,000 TK form + 25 % VAT.
+    </p>
+  </div>
+
+  <footer>
+    Rates as provided · For estimation only · Not an official quotation
+  </footer>
+</div>
+
+<script>
+  // ========== BASE RATES (5 storeys) ==========
+  const BASE = {
+    architectural: 8000,
+    structural: 15000,
+    approvalSheet: 12000,
+    plumbing: 3000,
+    electrical: 3000,
+    donationPerStorey: 3000,
+    applicationForm: 1000,
+    boring60: 3000,
+    boring100: 6000
+  };
+
+  // ---------- Font Size Control ----------
+  let fontScale = 1;
+  function changeFont(delta) {
+    if (delta === 0) {
+      fontScale = 1;
+    } else {
+      fontScale = Math.min(Math.max(fontScale + delta, 0.7), 1.5);
+    }
+    document.documentElement.style.setProperty('--font-scale', fontScale);
+    document.getElementById('fontScaleDisplay').textContent = fontScale.toFixed(1) + '×';
+  }
+  // ensure initial font scale is applied
+  document.documentElement.style.setProperty('--font-scale', 1);
+
+  // Show/hide custom depth
+  document.getElementById('depth').addEventListener('change', function () {
+    document.getElementById('customDepthWrap').style.display =
+      this.value === 'custom' ? 'block' : 'none';
+  });
+
+  function format(n) {
+    return Math.round(n).toLocaleString('en-BD');
+  }
+
+  function getBoringRate(depth) {
+    if (depth <= 60) return BASE.boring60;
+    if (depth >= 100) return BASE.boring100;
+    // linear interpolation between 60–100 ft
+    const ratio = (depth - 60) / 40;
+    return BASE.boring60 + ratio * (BASE.boring100 - BASE.boring60);
+  }
+
+  function calculate() {
+    const landArea = parseFloat(document.getElementById('landArea').value) || 0;
+    const perFloorSft = parseFloat(document.getElementById('perFloorSft').value) || 0;
+    const storeys = parseInt(document.getElementById('storeys').value) || 1;
+    const totalSft = perFloorSft * storeys;   // Total floor area = per floor × storeys
+
+    let depth = document.getElementById('depth').value;
+    if (depth === 'custom') {
+      depth = parseFloat(document.getElementById('customDepth').value) || 60;
+    } else {
+      depth = parseFloat(depth);
+    }
+
+    if (landArea < 100 || perFloorSft < 100 || storeys < 1) {
+      alert('Please enter valid Land Area, Area per Floor and Storeys.');
+      return;
+    }
+
+    // --- 1. Soil / Boring (based on LAND AREA) ---
+    const numBorings = Math.ceil(landArea / 720);
+    const ratePerBoring = getBoringRate(depth);
+    const soilCost = numBorings * ratePerBoring;
+
+    // --- 2. Design costs (base 5 storeys, ±10% per storey) ---
+    const factor = 1 + 0.10 * (storeys - 5);
+    const arch = BASE.architectural * factor;
+    const struct = BASE.structural * factor;
+    const approval = BASE.approvalSheet * factor;
+    const plumbing = BASE.plumbing * factor;
+    const electrical = BASE.electrical * factor;
+    const designTotal = arch + struct + approval + plumbing + electrical;
+
+    // --- 3. Municipality Donation ---
+    const donation = BASE.donationPerStorey * storeys;
+
+    // --- 4. Municipality Fee + VAT ---
+    // First 500 sft @ 2 TK, rest @ 1.5 TK  (based on TOTAL FLOOR AREA)
+    let muniFee = 0;
+    let restSft = 0;
+    if (totalSft <= 500) {
+      muniFee = totalSft * 2;
+      restSft = 0;
+    } else {
+      muniFee = 500 * 2 + (totalSft - 500) * 1.5;
+      restSft = totalSft - 500;
+    }
+    const muniBase = muniFee + BASE.applicationForm;
+    const vat = muniBase * 0.25;
+    const muniWithVat = muniBase + vat;
+
+    // --- Grand Total ---
+    const grand = soilCost + designTotal + donation + muniWithVat;
+
+    // Render
+    document.getElementById('grandTotal').textContent = format(grand) + ' TK';
+    document.getElementById('boringBadge').textContent =
+      numBorings + ' boring' + (numBorings > 1 ? 's' : '') + ' @ ' + depth + ' ft';
+
+    // ========== Section 1: Soil Test ==========
+    let html = `
+      <tr style="background:#f0fdfa;">
+        <td colspan="3" style="font-weight:700;color:#0f766e;padding-top:14px;">1. Soil Test / Boring (based on Land Area)</td>
+      </tr>
+      <tr>
+        <td>Land Area</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">${format(landArea)} sft ÷ 720</td>
+        <td style="text-align:right;font-weight:600;">${format(landArea)} sft</td>
+      </tr>
+      <tr>
+        <td>Number of Borings</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">ceil(${format(landArea)} ÷ 720)</td>
+        <td style="text-align:right;font-weight:600;">${numBorings} nos</td>
+      </tr>
+      <tr>
+        <td>Soil Test Cost</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">${numBorings} × ${format(ratePerBoring)} TK (${depth} ft)</td>
+        <td style="text-align:right;font-weight:600;">${format(soilCost)}</td>
+      </tr>
+
+      <tr style="background:#f0fdfa;">
+        <td colspan="3" style="font-weight:700;color:#0f766e;padding-top:14px;">2. Design Costs (base 5 storey ±10% per storey)</td>
+      </tr>
+      <tr>
+        <td>Architectural Design</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">8,000 × ${factor.toFixed(2)}</td>
+        <td style="text-align:right;font-weight:600;">${format(arch)}</td>
+      </tr>
+      <tr>
+        <td>Structural Design</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">15,000 × ${factor.toFixed(2)}</td>
+        <td style="text-align:right;font-weight:600;">${format(struct)}</td>
+      </tr>
+      <tr>
+        <td>Municipality Approval Sheet</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">12,000 × ${factor.toFixed(2)}</td>
+        <td style="text-align:right;font-weight:600;">${format(approval)}</td>
+      </tr>
+      <tr>
+        <td>Plumbing Design</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">3,000 × ${factor.toFixed(2)}</td>
+        <td style="text-align:right;font-weight:600;">${format(plumbing)}</td>
+      </tr>
+      <tr>
+        <td>Electrical Design</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">3,000 × ${factor.toFixed(2)}</td>
+        <td style="text-align:right;font-weight:600;">${format(electrical)}</td>
+      </tr>
+
+      <tr style="background:#f0fdfa;">
+        <td colspan="3" style="font-weight:700;color:#0f766e;padding-top:14px;">3. Municipality Costs (based on Total Floor Area)</td>
+      </tr>
+      <tr>
+        <td>Total Floor Area</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">${storeys} storeys × ${format(perFloorSft)} sft</td>
+        <td style="text-align:right;font-weight:600;">${format(totalSft)} sft</td>
+      </tr>
+      <tr>
+        <td>First 500 sft @ 2 TK</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">500 × 2</td>
+        <td style="text-align:right;font-weight:600;">${format(Math.min(totalSft, 500) * 2)}</td>
+      </tr>
+      <tr>
+        <td>Rest Area @ 1.5 TK</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">${format(restSft)} × 1.5</td>
+        <td style="text-align:right;font-weight:600;">${format(restSft * 1.5)}</td>
+      </tr>
+      <tr>
+        <td>Application Form</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">Fixed</td>
+        <td style="text-align:right;font-weight:600;">${format(BASE.applicationForm)}</td>
+      </tr>
+      <tr>
+        <td>Subtotal (before VAT)</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">Area fee + Form</td>
+        <td style="text-align:right;font-weight:600;">${format(muniBase)}</td>
+      </tr>
+      <tr>
+        <td>VAT 25%</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">${format(muniBase)} × 0.25</td>
+        <td style="text-align:right;font-weight:600;">${format(vat)}</td>
+      </tr>
+      <tr>
+        <td><strong>Municipality Fee Total (with VAT)</strong></td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;"></td>
+        <td style="text-align:right;font-weight:700;color:#0f766e;">${format(muniWithVat)}</td>
+      </tr>
+      <tr>
+        <td>Municipality Donation</td>
+        <td style="font-size:calc(0.85rem * var(--font-scale));color:#64748b;">${storeys} storeys × 3,000</td>
+        <td style="text-align:right;font-weight:600;">${format(donation)}</td>
+      </tr>
+
+      <tr class="total-row">
+        <td colspan="2">GRAND TOTAL (All Costs)</td>
+        <td style="text-align:right;">${format(grand)} TK</td>
+      </tr>
+    `;
+
+    document.getElementById('resultBody').innerHTML = html;
+    document.getElementById('results').classList.add('show');
+  }
+
+  function resetForm() {
+    document.getElementById('landArea').value = 3200;
+    document.getElementById('perFloorSft').value = 1500;
+    document.getElementById('storeys').value = 5;
+    document.getElementById('depth').value = '60';
+    document.getElementById('customDepth').value = 80;
+    document.getElementById('customDepthWrap').style.display = 'none';
+    document.getElementById('results').classList.remove('show');
+  }
+
+  // Auto-calculate on load with default values
+  window.onload = calculate;
+</script>
+</body>
+</html>
