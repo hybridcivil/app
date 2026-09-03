@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#4361ee">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <title>Structural Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary: #4361ee;
+            --primary-dark: #3a56d4;
+            --success: #2ecc71;
+            --danger: #f72585;
+            --light: #f1f3f9;
+            --dark: #1a1d26;
+            --gray: #6b7280;
+            --border: #e5e7eb;
+            --radius: 8px;
+            --shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        html, body {
+            height: 100%;
+            overflow: hidden;
+            font-family: 'Inter', system-ui, sans-serif;
+            background: #eef1f8;
+            color: var(--dark);
+            font-size: 13px;
+            line-height: 1.35;
+        }
+
+        .app {
+            height: 100dvh;
+            max-height: 100dvh;
+            display: flex;
+            flex-direction: column;
+            max-width: 920px;
+            margin: 0 auto;
+            background: #fff;
+            overflow: hidden;
+        }
+
+        /* Header */
+        .header {
+            background: var(--primary);
+            color: #fff;
+            padding: 10px 14px 8px;
+            flex-shrink: 0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+        .header h1 {
+            font-size: 15px;
+            font-weight: 600;
+            letter-spacing: -0.01em;
+        }
+        .header .sub {
+            font-size: 10px;
+            opacity: 0.85;
+            font-weight: 400;
+        }
+        .header-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 3px 8px;
+            border-radius: 20px;
+            font-size: 10px;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+
+        /* Main content - no scroll */
+        .main {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            padding: 8px 10px 6px;
+            gap: 6px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 4px;
+            flex-shrink: 0;
+            background: var(--light);
+            padding: 3px;
+            border-radius: var(--radius);
+        }
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 7px 4px;
+            font-size: 11px;
+            font-weight: 600;
+            border: none;
+            background: transparent;
+            color: var(--gray);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+        .tab.active {
+            background: #fff;
+            color: var(--primary);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+        }
+
+        /* Panels */
+        .panels {
+            flex: 1;
+            min-height: 0;
+            position: relative;
+            overflow: hidden;
+        }
+        .panel {
+            display: none;
+            height: 100%;
+            overflow: hidden;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .panel.active {
+            display: flex;
+        }
+
+        /* Form grid */
+        .form-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 6px 8px;
+            flex: 1;
+            min-height: 0;
+            align-content: start;
+        }
+        .form-grid.cols-3 {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+        .form-grid.cols-4 {
+            grid-template-columns: 1fr 1fr 1fr 1fr;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+            min-width: 0;
+        }
+        .field.full {
+            grid-column: 1 / -1;
+        }
+        .field label {
+            font-size: 10px;
+            font-weight: 500;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .field input,
+        .field select {
+            width: 100%;
+            height: 32px;
+            padding: 0 8px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 500;
+            background: var(--light);
+            color: var(--dark);
+            -webkit-appearance: none;
+            appearance: none;
+        }
+        .field input:focus,
+        .field select:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: #fff;
+            box-shadow: 0 0 0 2px rgba(67,97,238,0.15);
+        }
+        .field input[readonly] {
+            background: #e8ecf4;
+            color: var(--primary);
+            font-weight: 600;
+        }
+        .field input[type="number"]::-webkit-inner-spin-button,
+        .field input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Rebar block */
+        .rebar-block {
+            background: var(--light);
+            border-radius: var(--radius);
+            padding: 6px 8px;
+            flex-shrink: 0;
+        }
+        .rebar-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 4px;
+        }
+        .rebar-head span {
+            font-size: 10px;
+            font-weight: 600;
+            color: var(--gray);
+        }
+        .rebar-sets {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            max-height: 72px;
+            overflow-y: auto;
+        }
+        .rebar-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+        }
+        .rebar-row input {
+            flex: 1;
+            height: 28px;
+            padding: 0 6px;
+            border: 1px solid var(--border);
+            border-radius: 5px;
+            font-size: 11px;
+            background: #fff;
+        }
+        .btn-icon {
+            width: 28px;
+            height: 28px;
+            border: none;
+            border-radius: 5px;
+            font-size: 14px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+        .btn-add {
+            background: var(--success);
+            color: #fff;
+            height: 24px;
+            padding: 0 10px;
+            font-size: 11px;
+            border-radius: 5px;
+            border: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-del {
+            background: var(--danger);
+            color: #fff;
+        }
+        .btn-del:disabled {
+            opacity: 0.35;
+            cursor: not-allowed;
+        }
+
+        /* Results strip - always visible */
+        .results {
+            flex-shrink: 0;
+            background: linear-gradient(180deg, #f8f9fd 0%, #fff 100%);
+            border-top: 1px solid var(--border);
+            padding: 8px 10px 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .results-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 4px 6px;
+        }
+        .r-item {
+            background: #fff;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            padding: 5px 6px;
+            text-align: center;
+            min-width: 0;
+        }
+        .r-item .lbl {
+            font-size: 9px;
+            color: var(--gray);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+        .r-item .val {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--dark);
+            margin-top: 1px;
+        }
+        .r-item .unit {
+            font-size: 9px;
+            color: var(--gray);
+            font-weight: 400;
+        }
+
+        .highlight-bar {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(67,97,238,0.08);
+            border-radius: var(--radius);
+            padding: 7px 10px;
+        }
+        .highlight-bar .main-val {
+            font-size: 18px;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1;
+        }
+        .highlight-bar .main-lbl {
+            font-size: 10px;
+            color: var(--gray);
+        }
+        .capacity-box {
+            flex: 1;
+            text-align: right;
+        }
+        .capacity-val {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--dark);
+        }
+        .status {
+            font-size: 11px;
+            font-weight: 700;
+            margin-top: 1px;
+        }
+        .status.safe { color: var(--success); }
+        .status.unsafe { color: var(--danger); }
+
+        .error-banner {
+            display: none;
+            background: rgba(247,37,133,0.1);
+            color: var(--danger);
+            font-size: 11px;
+            padding: 5px 10px;
+            text-align: center;
+            flex-shrink: 0;
+        }
+        .error-banner.show { display: block; }
+
+        .footer {
+            flex-shrink: 0;
+            text-align: center;
+            font-size: 9px;
+            color: var(--gray);
+            padding: 3px 8px 5px;
+            background: #fafbfd;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Circular / rectangular toggle visibility */
+        .circ-hide { display: none !important; }
+
+        /* Very small screens */
+        @media (max-width: 380px) {
+            .form-grid.cols-3, .form-grid.cols-4 {
+                grid-template-columns: 1fr 1fr;
+            }
+            .results-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .header h1 { font-size: 13px; }
+            .r-item .val { font-size: 11px; }
+            .highlight-bar .main-val { font-size: 16px; }
+        }
+
+        @media (min-width: 600px) {
+            .app {
+                border-left: 1px solid var(--border);
+                border-right: 1px solid var(--border);
+            }
+            .form-grid {
+                grid-template-columns: 1fr 1fr 1fr;
+            }
+            .form-grid.cols-4 {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+
+        @media (min-height: 700px) {
+            .field input, .field select { height: 34px; }
+            .main { padding: 10px 12px 8px; gap: 8px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="app">
+        <div class="header">
+            <div>
+                <h1>Structural Calculator</h1>
+                <div class="sub">Weight + Axial Capacity · ACI 318-19 · BNBC 2020</div>
+            </div>
+            <div class="header-badge" id="storyBadge">1 Story</div>
+        </div>
+
+        <div class="error-banner" id="error"></div>
+
+        <div class="main">
+            <div class="tabs">
+                <button class="tab active" data-tab="structure">Structure</button>
+                <button class="tab" data-tab="env">Environment</button>
+                <button class="tab" data-tab="axial">Axial Capacity</button>
+            </div>
+
+            <div class="panels">
+                <!-- Structure Panel -->
+                <div class="panel active" id="panel-structure">
+                    <div class="form-grid cols-3">
+                        <div class="field">
+                            <label>Stories</label>
+                            <input type="number" id="numStories" value="1" min="1">
+                        </div>
+                        <div class="field">
+                            <label>Col Height (ft)</label>
+                            <input type="number" id="colHeight" value="10" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Column Shape</label>
+                            <select id="columnShape">
+                                <option value="rectangular">Rectangular</option>
+                                <option value="circular">Circular</option>
+                            </select>
+                        </div>
+                        <div class="field rectangular-inputs">
+                            <label>Width (in)</label>
+                            <input type="number" id="colWidth" value="12" step="0.1">
+                        </div>
+                        <div class="field rectangular-inputs">
+                            <label>Depth (in)</label>
+                            <input type="number" id="colDepth" value="12" step="0.1">
+                        </div>
+                        <div class="field circular-inputs circ-hide">
+                            <label>Diameter (in)</label>
+                            <input type="number" id="colDiameter" value="12" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Slab Area (sq.ft)</label>
+                            <input type="number" id="slabArea" value="150" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Slab Thick (in)</label>
+                            <input type="number" id="slabThickness" value="5" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Beam Width (in)</label>
+                            <input type="number" id="beamWidth" value="10" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Beam Depth (in)</label>
+                            <input type="number" id="beamDepth" value="10" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Floor Finish (psf)</label>
+                            <input type="number" id="floorFinish" value="25" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Live Load (psf)</label>
+                            <input type="number" id="liveLoad" value="45" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>DL Factor</label>
+                            <input type="number" id="deadFactor" value="1.2" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>LL Factor</label>
+                            <input type="number" id="liveFactor" value="1.6" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Brick Wt (kg)</label>
+                            <input type="number" id="brickWeight" value="3.5" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>No. of Bricks</label>
+                            <input type="number" id="numBricks" value="1102">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Environment Panel -->
+                <div class="panel" id="panel-env">
+                    <div class="form-grid cols-3">
+                        <div class="field full">
+                            <label>District (BNBC 2020)</label>
+                            <select id="district">
+                                <option value="">Select District</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Seismic Z</label>
+                            <input type="number" id="seismicZoneFactor" value="0.2" step="0.01">
+                        </div>
+                        <div class="field">
+                            <label>Wind Speed (m/s)</label>
+                            <input type="number" id="windSpeed" value="65.7" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Soil Type</label>
+                            <select id="soilType">
+                                <option value="B">B (Rock)</option>
+                                <option value="C">C (Dense)</option>
+                                <option value="D" selected>D (Stiff)</option>
+                                <option value="E">E (Soft)</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Seismic I</label>
+                            <input type="number" id="importanceFactor" value="1.0" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Exposure</label>
+                            <select id="exposureCategory">
+                                <option value="B">B (Urban)</option>
+                                <option value="C" selected>C (Open)</option>
+                                <option value="D">D (Coastal)</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>Seismic Factor</label>
+                            <input type="number" id="seismicFactor" value="1.0" step="0.1">
+                        </div>
+                        <div class="field">
+                            <label>Wind Factor</label>
+                            <input type="number" id="windFactor" value="1.6" step="0.1">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Axial Panel -->
+                <div class="panel" id="panel-axial">
+                    <div class="form-grid cols-3">
+                        <div class="field">
+                            <label>Loading Type</label>
+                            <select id="loadingType">
+                                <option value="pure">Pure Axial</option>
+                                <option value="uniaxial">Uniaxial</option>
+                                <option value="biaxial">Biaxial</option>
+                            </select>
+                        </div>
+                        <div class="field">
+                            <label>f'c (psi)</label>
+                            <input type="number" id="fc" value="2500">
+                        </div>
+                        <div class="field">
+                            <label>fy (psi)</label>
+                            <input type="number" id="fy" value="60000">
+                        </div>
+                        <div class="field">
+                            <label>Actual Load (kips)</label>
+                            <input type="number" id="actualLoad" readonly>
+                        </div>
+                    </div>
+                    <div class="rebar-block">
+                        <div class="rebar-head">
+                            <span>Rebar Sets (mm / nos)</span>
+                            <button class="btn-add" onclick="addRebarSet()">+ Add</button>
+                        </div>
+                        <div class="rebar-sets" id="rebar-sets">
+                            <div class="rebar-row" data-index="0">
+                                <input type="number" id="barSize_0" placeholder="Ø mm" value="16" step="0.1">
+                                <input type="number" id="barNos_0" placeholder="Nos" value="6">
+                                <button class="btn-icon btn-del" onclick="removeRebarSet(0)" disabled>−</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Always-visible Results -->
+        <div class="results">
+            <div class="results-title">
+                <span>Live Results</span>
+                <span id="rhoNote" style="font-weight:400;color:var(--gray)"></span>
+            </div>
+            <div class="results-grid">
+                <div class="r-item">
+                    <div class="lbl">Struct DL</div>
+                    <div class="val"><span id="structuralDead">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Finish DL</div>
+                    <div class="val"><span id="floorFinishDead">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Brick</div>
+                    <div class="val"><span id="brickLoad">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Total DL</div>
+                    <div class="val"><span id="totalDead">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Fact. DL</div>
+                    <div class="val"><span id="factoredDead">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Live</div>
+                    <div class="val"><span id="liveLoadResult">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Fact. LL</div>
+                    <div class="val"><span id="factoredLive">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Seismic</div>
+                    <div class="val"><span id="seismicLoad">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Fact. S</div>
+                    <div class="val"><span id="factoredSeismic">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Wind</div>
+                    <div class="val"><span id="windLoad">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">Fact. W</div>
+                    <div class="val"><span id="factoredWind">0.00</span> <span class="unit">t</span></div>
+                </div>
+                <div class="r-item">
+                    <div class="lbl">ρ (%)</div>
+                    <div class="val"><span id="rhoVal">—</span></div>
+                </div>
+            </div>
+
+            <div class="highlight-bar">
+                <div>
+                    <div class="main-val" id="totalFactored">0.00</div>
+                    <div class="main-lbl">Total Factored Load (tons)</div>
+                </div>
+                <div class="capacity-box">
+                    <div class="capacity-val" id="capVal">— kips</div>
+                    <div class="status" id="capStatus">—</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="footer">
+            Concrete 2400 kg/m³ · 1 ton ≈ 2.20462 kips · © Hybrid Civil Engineering
+        </div>
+    </div>
+
+    <script>
+        const windData = {
+            "angarpota": { speed: 47.8, zFactor: 0.28 }, "bagerhat": { speed: 77.5, zFactor: 0.12 },
+            "bandarban": { speed: 62.5, zFactor: 0.28 }, "barguna": { speed: 80.0, zFactor: 0.12 },
+            "barisal": { speed: 78.7, zFactor: 0.12 }, "bhola": { speed: 69.5, zFactor: 0.12 },
+            "bogra": { speed: 61.9, zFactor: 0.28 }, "brahmanbaria": { speed: 56.7, zFactor: 0.28 },
+            "chandpur": { speed: 50.6, zFactor: 0.2 }, "chapai nawabganj": { speed: 41.4, zFactor: 0.12 },
+            "chittagong": { speed: 80.0, zFactor: 0.28 }, "chuadanga": { speed: 61.9, zFactor: 0.12 },
+            "comilla": { speed: 61.4, zFactor: 0.2 }, "cox's bazar": { speed: 80.0, zFactor: 0.28 },
+            "dahagram": { speed: 47.8, zFactor: 0.28 }, "dhaka": { speed: 65.7, zFactor: 0.2 },
+            "dinajpur": { speed: 41.4, zFactor: 0.2 }, "faridpur": { speed: 63.1, zFactor: 0.2 },
+            "feni": { speed: 64.1, zFactor: 0.2 }, "gaibandha": { speed: 65.6, zFactor: 0.28 },
+            "gazipur": { speed: 66.5, zFactor: 0.2 }, "gopalganj": { speed: 74.5, zFactor: 0.12 },
+            "habiganj": { speed: 54.2, zFactor: 0.36 }, "hatiya": { speed: 80.0, zFactor: 0.12 },
+            "ishurdi": { speed: 69.5, zFactor: 0.2 }, "jamalpur": { speed: 56.7, zFactor: 0.36 },
+            "jessore": { speed: 64.1, zFactor: 0.12 }, "jhalakati": { speed: 80.0, zFactor: 0.12 },
+            "jhenaidah": { speed: 65.0, zFactor: 0.12 }, "khagrachhari": { speed: 56.7, zFactor: 0.28 },
+            "khulna": { speed: 73.3, zFactor: 0.12 }, "kishoreganj": { speed: 64.7, zFactor: 0.36 },
+            "kurigram": { speed: 65.6, zFactor: 0.36 }, "kushtia": { speed: 66.9, zFactor: 0.2 },
+            "lalmonirhat": { speed: 63.7, zFactor: 0.28 }, "madaripur": { speed: 68.1, zFactor: 0.2 },
+            "magura": { speed: 65.0, zFactor: 0.12 }, "manikganj": { speed: 58.2, zFactor: 0.2 },
+            "meherpur": { speed: 58.2, zFactor: 0.12 }, "maheshkhali": { speed: 80.0, zFactor: 0.28 },
+            "moulvibazar": { speed: 53.0, zFactor: 0.36 }, "munshiganj": { speed: 57.1, zFactor: 0.2 },
+            "mymensingh": { speed: 67.4, zFactor: 0.36 }, "naogaon": { speed: 55.2, zFactor: 0.2 },
+            "narail": { speed: 68.6, zFactor: 0.12 }, "narayanganj": { speed: 61.1, zFactor: 0.2 },
+            "narsingdi": { speed: 59.7, zFactor: 0.28 }, "natore": { speed: 61.9, zFactor: 0.2 },
+            "netrokona": { speed: 65.6, zFactor: 0.36 }, "nilphamari": { speed: 44.7, zFactor: 0.12 },
+            "noakhali": { speed: 57.1, zFactor: 0.2 }, "pabna": { speed: 63.1, zFactor: 0.2 },
+            "panchagarh": { speed: 41.4, zFactor: 0.2 }, "patuakhali": { speed: 80.0, zFactor: 0.12 },
+            "pirojpur": { speed: 80.0, zFactor: 0.12 }, "rajbari": { speed: 59.1, zFactor: 0.2 },
+            "rajshahi": { speed: 49.2, zFactor: 0.12 }, "rangamati": { speed: 56.7, zFactor: 0.28 },
+            "rangpur": { speed: 65.3, zFactor: 0.28 }, "satkhira": { speed: 57.6, zFactor: 0.12 },
+            "shariatpur": { speed: 61.9, zFactor: 0.2 }, "sherpur": { speed: 62.5, zFactor: 0.36 },
+            "sirajganj": { speed: 50.6, zFactor: 0.28 }, "srimangal": { speed: 50.6, zFactor: 0.36 },
+            "st. martin's": { speed: 80.0, zFactor: 0.28 }, "sunamganj": { speed: 61.1, zFactor: 0.36 },
+            "sylhet": { speed: 61.1, zFactor: 0.36 }, "tangail": { speed: 50.6, zFactor: 0.28 },
+            "teknaf": { speed: 80.0, zFactor: 0.28 }, "thakurgaon": { speed: 41.4, zFactor: 0.2 }
+        };
+
+        let rebarSetCount = 1;
+
+        function debounce(fn, wait) {
+            let t;
+            return function(...args) {
+                clearTimeout(t);
+                t = setTimeout(() => fn.apply(this, args), wait);
+            };
+        }
+
+        // Tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+                tab.classList.add('active');
+                document.getElementById('panel-' + tab.dataset.tab).classList.add('active');
+            });
+        });
+
+        function populateDistrictDropdown() {
+            const sel = document.getElementById('district');
+            Object.keys(windData).sort().forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d;
+                opt.textContent = d.charAt(0).toUpperCase() + d.slice(1);
+                sel.appendChild(opt);
+            });
+            sel.value = 'dhaka';
+            updateEnvironmentalInputs();
+        }
+
+        function updateEnvironmentalInputs() {
+            const d = document.getElementById('district').value;
+            if (d && windData[d]) {
+                document.getElementById('windSpeed').value = windData[d].speed.toFixed(1);
+                document.getElementById('seismicZoneFactor').value = windData[d].zFactor.toFixed(2);
+            }
+            debouncedCalc();
+        }
+
+        function toggleColumnInputs() {
+            const shape = document.getElementById('columnShape').value;
+            document.querySelectorAll('.rectangular-inputs').forEach(el => {
+                el.classList.toggle('circ-hide', shape === 'circular');
+            });
+            document.querySelectorAll('.circular-inputs').forEach(el => {
+                el.classList.toggle('circ-hide', shape === 'rectangular');
+            });
+            debouncedCalc();
+        }
+
+        function calculateWeight() {
+            const concreteDensity = 2400;
+            const lbToKg = 0.453592;
+            const inchToMeter = 0.0254;
+            const footToMeter = 0.3048;
+            const msToMph = 2.23694;
+
+            const numStories = parseFloat(document.getElementById('numStories').value);
+            const colHeight = parseFloat(document.getElementById('colHeight').value) * footToMeter;
+            const columnShape = document.getElementById('columnShape').value;
+            let colWidth, colDepth, colDiameter;
+            if (columnShape === 'rectangular') {
+                colWidth = parseFloat(document.getElementById('colWidth').value) * inchToMeter;
+                colDepth = parseFloat(document.getElementById('colDepth').value) * inchToMeter;
+            } else {
+                colDiameter = parseFloat(document.getElementById('colDiameter').value) * inchToMeter;
+            }
+            const slabAreaSqft = parseFloat(document.getElementById('slabArea').value);
+            const slabThickness = parseFloat(document.getElementById('slabThickness').value) * inchToMeter;
+            const beamWidth = parseFloat(document.getElementById('beamWidth').value) * inchToMeter;
+            const beamDepth = parseFloat(document.getElementById('beamDepth').value) * inchToMeter;
+            const floorFinish = parseFloat(document.getElementById('floorFinish').value);
+            const liveLoad = parseFloat(document.getElementById('liveLoad').value);
+            const deadFactor = parseFloat(document.getElementById('deadFactor').value);
+            const liveFactor = parseFloat(document.getElementById('liveFactor').value);
+            const brickWeight = parseFloat(document.getElementById('brickWeight').value);
+            const numBricks = parseFloat(document.getElementById('numBricks').value);
+            const seismicZoneFactor = parseFloat(document.getElementById('seismicZoneFactor').value);
+            const soilType = document.getElementById('soilType').value;
+            const importanceFactor = parseFloat(document.getElementById('importanceFactor').value);
+            const windSpeed = parseFloat(document.getElementById('windSpeed').value) * msToMph;
+            const exposureCategory = document.getElementById('exposureCategory').value;
+            const seismicFactor = parseFloat(document.getElementById('seismicFactor').value);
+            const windFactor = parseFloat(document.getElementById('windFactor').value);
+
+            const errorDiv = document.getElementById('error');
+            errorDiv.classList.remove('show');
+
+            let inputs = [numStories, colHeight, slabAreaSqft, slabThickness, beamWidth, beamDepth,
+                floorFinish, liveLoad, deadFactor, liveFactor, brickWeight, numBricks,
+                seismicZoneFactor, importanceFactor, windSpeed, seismicFactor, windFactor];
+            if (columnShape === 'rectangular') inputs.push(colWidth, colDepth);
+            else inputs.push(colDiameter);
+
+            if (inputs.some(isNaN) || numStories < 1 || colHeight <= 0 || slabAreaSqft <= 0 ||
+                slabThickness <= 0 || beamWidth <= 0 || beamDepth <= 0 || floorFinish < 0 ||
+                liveLoad < 0 || deadFactor <= 0 || liveFactor <= 0 || brickWeight <= 0 ||
+                numBricks < 0 || seismicZoneFactor <= 0 || importanceFactor <= 0 || windSpeed <= 0 ||
+                seismicFactor <= 0 || windFactor <= 0 ||
+                (columnShape === 'rectangular' && (colWidth <= 0 || colDepth <= 0)) ||
+                (columnShape === 'circular' && colDiameter <= 0)) {
+                errorDiv.textContent = 'Please enter valid positive numbers.';
+                errorDiv.classList.add('show');
+                return null;
+            }
+
+            document.getElementById('storyBadge').textContent = numStories + (numStories > 1 ? ' Stories' : ' Story');
+
+            const slabAreaSqm = slabAreaSqft * 0.092903;
+            const beamLength = 2 * Math.sqrt(slabAreaSqft) * 0.3048;
+
+            let colVolume;
+            if (columnShape === 'rectangular') {
+                colVolume = colWidth * colDepth * colHeight;
+            } else {
+                const r = colDiameter / 2;
+                colVolume = Math.PI * r * r * colHeight;
+            }
+            const colWeight = (colVolume * concreteDensity / 1000) * numStories;
+            const slabVolume = slabAreaSqm * slabThickness;
+            const slabWeight = (slabVolume * concreteDensity / 1000) * numStories;
+            const beamVolume = beamWidth * beamDepth * beamLength;
+            const beamWeight = (beamVolume * concreteDensity / 1000) * numStories;
+
+            const structuralDead = colWeight + slabWeight + beamWeight;
+            const floorFinishDead = ((slabAreaSqft * floorFinish * lbToKg) / 1000) * numStories;
+            const brickLoadTon = (brickWeight * numBricks * numStories) / 1000;
+
+            const totalDead = structuralDead + floorFinishDead + brickLoadTon;
+            const factoredDead = totalDead * deadFactor;
+
+            const liveLoadTon = ((slabAreaSqft * liveLoad * lbToKg) / 1000) * numStories;
+            const factoredLive = liveLoadTon * liveFactor;
+
+            // Seismic
+            const R = 5;
+            let siteCoefficient = { B: 1.0, C: 1.2, D: 1.4, E: 1.7 }[soilType] || 1.0;
+            const Cs = (seismicZoneFactor * siteCoefficient * importanceFactor) / (R / importanceFactor);
+            const Cs_max = 0.44 * siteCoefficient * importanceFactor;
+            const effectiveCs = Math.min(Cs_max, Math.max(0.01, Cs));
+            const seismicLoadTon = effectiveCs * totalDead;
+            const factoredSeismic = seismicLoadTon * seismicFactor;
+
+            // Wind
+            const Kzt = 1.0, Kd = 0.85, G = 0.85, Cp = 0.8;
+            let Kz = { B: 0.70, C: 1.00, D: 1.20 }[exposureCategory] || 1.00;
+            const qz = 0.00256 * Kz * Kzt * Kd * windSpeed ** 2;
+            const windPressure = qz * G * Cp;
+            const buildingHeight = numStories * colHeight;
+            const windLoadTon = ((windPressure * slabAreaSqft * lbToKg) / 1000) * (buildingHeight / 10);
+            const factoredWind = windLoadTon * windFactor;
+
+            const totalFactored = factoredDead + factoredLive + Math.max(factoredSeismic, factoredWind);
+
+            const ids = {
+                structuralDead, floorFinishDead, brickLoad: brickLoadTon, totalDead,
+                factoredDead, liveLoadResult: liveLoadTon, factoredLive,
+                seismicLoad: seismicLoadTon, factoredSeismic, windLoad: windLoadTon,
+                factoredWind, totalFactored
+            };
+            Object.keys(ids).forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.textContent = ids[id].toFixed(2);
+            });
+
+            return totalFactored;
+        }
+
+        function addRebarSet() {
+            const container = document.getElementById('rebar-sets');
+            const idx = rebarSetCount++;
+            const row = document.createElement('div');
+            row.className = 'rebar-row';
+            row.dataset.index = idx;
+            row.innerHTML = `
+                <input type="number" id="barSize_${idx}" placeholder="Ø mm" value="20" step="0.1">
+                <input type="number" id="barNos_${idx}" placeholder="Nos" value="6">
+                <button class="btn-icon btn-del" onclick="removeRebarSet(${idx})">−</button>
+            `;
+            container.appendChild(row);
+            updateRemoveButtons();
+            row.querySelectorAll('input').forEach(inp => inp.addEventListener('input', debouncedCalc));
+            debouncedCalc();
+        }
+
+        function removeRebarSet(index) {
+            const row = document.querySelector(`.rebar-row[data-index="${index}"]`);
+            if (row) {
+                row.remove();
+                updateRemoveButtons();
+                debouncedCalc();
+            }
+        }
+
+        function updateRemoveButtons() {
+            const rows = document.querySelectorAll('.rebar-row');
+            document.querySelectorAll('.btn-del').forEach(btn => {
+                btn.disabled = rows.length <= 1;
+            });
+        }
+
+        function calculateCapacity(totalFactoredTons) {
+            const loadingType = document.getElementById('loadingType').value;
+            const columnShape = document.getElementById('columnShape').value;
+            let sizeX, sizeY, diameter;
+            if (columnShape === 'rectangular') {
+                sizeX = parseFloat(document.getElementById('colWidth').value);
+                sizeY = parseFloat(document.getElementById('colDepth').value);
+            } else {
+                diameter = parseFloat(document.getElementById('colDiameter').value);
+            }
+            const height = parseFloat(document.getElementById('colHeight').value);
+            const fc = parseFloat(document.getElementById('fc').value);
+            const fy = parseFloat(document.getElementById('fy').value);
+
+            let totalAst = 0;
+            let hasValid = true;
+            document.querySelectorAll('.rebar-row').forEach(row => {
+                const idx = row.dataset.index;
+                const barSize = parseFloat(document.getElementById(`barSize_${idx}`).value);
+                const barNos = parseInt(document.getElementById(`barNos_${idx}`).value);
+                if (isNaN(barSize) || isNaN(barNos)) hasValid = false;
+                else {
+                    const barArea = Math.PI * (barSize / 25.4 / 2) ** 2;
+                    totalAst += barNos * barArea;
+                }
+            });
+
+            if ([height, fc, fy].some(isNaN) || !hasValid ||
+                (columnShape === 'rectangular' && (isNaN(sizeX) || isNaN(sizeY))) ||
+                (columnShape === 'circular' && isNaN(diameter))) {
+                document.getElementById('capVal').textContent = '—';
+                document.getElementById('capStatus').textContent = 'Check inputs';
+                document.getElementById('capStatus').className = 'status';
+                document.getElementById('rhoVal').textContent = '—';
+                return;
+            }
+
+            let Ag, r;
+            if (columnShape === 'rectangular') {
+                Ag = sizeX * sizeY;
+                r = 0.3 * Math.min(sizeX, sizeY);
+            } else {
+                Ag = Math.PI * (diameter / 2) ** 2;
+                r = diameter / 4;
+            }
+
+            const rho = totalAst / Ag;
+            document.getElementById('rhoVal').textContent = (rho * 100).toFixed(2);
+
+            if (rho < 0.01 || rho > 0.08) {
+                document.getElementById('error').textContent = 'Reinforcement ratio must be 1%–8%.';
+                document.getElementById('error').classList.add('show');
+                document.getElementById('capVal').textContent = '—';
+                document.getElementById('capStatus').textContent = 'ρ out of range';
+                document.getElementById('capStatus').className = 'status unsafe';
+                return;
+            }
+
+            const k = 1.0;
+            const lu = height * 12;
+            const slenderness = (k * lu) / r;
+            const phi = 0.65;
+
+            let Pn_axial = 0.80 * (0.85 * fc * (Ag - totalAst) + fy * totalAst);
+            let phiPn = phi * Pn_axial;
+
+            if (loadingType === 'uniaxial') phiPn *= 0.75;
+            else if (loadingType === 'biaxial') phiPn *= 0.6;
+
+            let finalCapacity = phiPn;
+            let note = '';
+            if (slenderness > 34) {
+                const Cr = 1 / (1 + Math.pow((slenderness / 100), 2));
+                finalCapacity *= Cr;
+                note = `Slender λ=${slenderness.toFixed(0)}`;
+            } else {
+                note = `Non-slender λ=${slenderness.toFixed(0)}`;
+            }
+            document.getElementById('rhoNote').textContent = note;
+
+            const capacityKips = finalCapacity / 1000;
+            const actualLoadKips = totalFactoredTons * 2.20462;
+            document.getElementById('actualLoad').value = actualLoadKips.toFixed(2);
+
+            document.getElementById('capVal').textContent = capacityKips.toFixed(1) + ' kips';
+
+            if (!isNaN(actualLoadKips) && actualLoadKips > 0) {
+                const pct = (capacityKips / actualLoadKips) * 100;
+                if (capacityKips >= actualLoadKips) {
+                    document.getElementById('capStatus').textContent = `SAFE · ${pct.toFixed(0)}%`;
+                    document.getElementById('capStatus').className = 'status safe';
+                } else {
+                    document.getElementById('capStatus').textContent = `UNSAFE · ${pct.toFixed(0)}%`;
+                    document.getElementById('capStatus').className = 'status unsafe';
+                }
+            }
+        }
+
+        const debouncedCalc = debounce(() => {
+            document.getElementById('error').classList.remove('show');
+            const total = calculateWeight();
+            if (total !== null) calculateCapacity(total);
+        }, 200);
+
+        document.addEventListener('DOMContentLoaded', () => {
+            updateRemoveButtons();
+            toggleColumnInputs();
+            populateDistrictDropdown();
+            debouncedCalc();
+
+            document.getElementById('columnShape').addEventListener('change', toggleColumnInputs);
+            document.getElementById('district').addEventListener('change', updateEnvironmentalInputs);
+
+            document.querySelectorAll('input:not([readonly]), select').forEach(el => {
+                el.addEventListener('input', debouncedCalc);
+                el.addEventListener('change', debouncedCalc);
+            });
+
+            document.getElementById('slabArea').addEventListener('input', function() {
+                const a = parseFloat(this.value);
+                if (!isNaN(a) && a > 0) {
+                    document.getElementById('numBricks').value = Math.round(Math.sqrt(a) * 2 * 9 * 5);
+                }
+            });
+        });
+    </script>
+</body>
+</html>
