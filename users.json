@@ -13,10 +13,10 @@
     "username": "karim",
     "password": "abc123",
     "expiry": "2026-09-20"
-  }
+  },
   {
     "username": "rahim1",
     "password": "pass123",
     "expiry": "2025-10-15"
-  },
+  }
 ]
