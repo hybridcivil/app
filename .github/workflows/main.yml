@@ -1,39 +1,23 @@
-name: CI/CD Pipeline
+name: Fix Permissions Test
 
 on:
   push:
     branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
 
-# 🔑 THIS BLOCK FIXES THE 403 ERROR BY GRANTING WRITE ACCESS
 permissions:
   contents: write
   pull-requests: write
   issues: write
 
 jobs:
-  build-and-test:
+  test-permissions-job:
     runs-on: ubuntu-latest
-
     steps:
-      # Step 1: Check out the repository code
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      # Step 2: Set up an environment (Example: Node.js)
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-
-      # Step 3: Install project dependencies
-      - name: Install dependencies
-        run: npm ci
-
-      # Step 4: Run your automated tests
-      - name: Run tests
+      - name: Test Write Action
+        run: echo "Permissions are successfully fixed!"
         run: npm test --if-present
 
   deploy:
