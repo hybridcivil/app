@@ -1,17 +1,51 @@
 name: CI/CD Pipeline
 
-on: [push, pull_request]
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
 
-# Add this to bypass the repository-level restriction for this specific file
+# 🔑 THIS BLOCK FIXES THE 403 ERROR BY GRANTING WRITE ACCESS
 permissions:
-  contents: write      # Needed for creating releases, pushing tags, or modifying code
-  pull-requests: write # Needed if commenting on PRs or auto-merging
-  security-events: write # Needed for CodeQL / vulnerability scans
+  contents: write
+  pull-requests: write
+  issues: write
 
 jobs:
-  your-job-name:
+  build-and-test:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v4
-      # ... your actions steps here
-      
+      # Step 1: Check out the repository code
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Step 2: Set up an environment (Example: Node.js)
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # Step 3: Install project dependencies
+      - name: Install dependencies
+        run: npm ci
+
+      # Step 4: Run your automated tests
+      - name: Run tests
+        run: npm test --if-present
+
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main'
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Deployment Script
+        run: |
+          echo "Deploying application..."
+          # Replace this line with your actual build/deploy commands
