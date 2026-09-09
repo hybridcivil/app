@@ -1,0 +1,17 @@
+name: CI/CD Pipeline
+
+on: [push, pull_request]
+
+# Add this to bypass the repository-level restriction for this specific file
+permissions:
+  contents: write      # Needed for creating releases, pushing tags, or modifying code
+  pull-requests: write # Needed if commenting on PRs or auto-merging
+  security-events: write # Needed for CodeQL / vulnerability scans
+
+jobs:
+  your-job-name:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      # ... your actions steps here
+      
