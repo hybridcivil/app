@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Tile Cost Calculator</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+  :root {
+    --bg: #0f172a;
+    --card: #1e293b;
+    --border: #334155;
+    --primary: #3b82f6;
+    --primary-hover: #2563eb;
+    --accent: #22c55e;
+    --text: #f1f5f9;
+    --muted: #94a3b8;
+  }
+
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Inter', sans-serif;
+  }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 20px;
+    background-image: 
+      radial-gradient(at 0% 0%, rgba(59, 130, 246, 0.15) 0px, transparent 50%),
+      radial-gradient(at 100% 100%, rgba(34, 197, 94, 0.1) 0px, transparent 50%);
+  }
+
+  .container {
+    max-width: 1150px;
+    margin: 0 auto;
+  }
+
+  header {
+    text-align: center;
+    margin-bottom: 28px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    background: linear-gradient(90deg, #3b82f6, #22c55e);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 6px;
+  }
+
+  header p {
+    color: var(--muted);
+    font-size: 0.95rem;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+  }
+
+  @media (max-width: 950px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+  }
+
+  .card h2 {
+    font-size: 1.15rem;
+    font-weight: 600;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .card h2 span {
+    background: var(--primary);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+  }
+
+  .form-group {
+    margin-bottom: 16px;
+  }
+
+  label {
+    display: block;
+    font-size: 0.84rem;
+    color: var(--muted);
+    margin-bottom: 6px;
+    font-weight: 500;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 11px 14px;
+    background: #0f172a;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.95rem;
+    transition: all 0.2s;
+  }
+
+  input:focus, select:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+  }
+
+  .row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+  }
+
+  .btn {
+    width: 100%;
+    padding: 14px;
+    background: linear-gradient(135deg, var(--primary), #1d4ed8);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 8px;
+  }
+
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(59, 130, 246, 0.4);
+  }
+
+  .result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 11px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .result-item:last-child {
+    border-bottom: none;
+  }
+
+  .result-item .label {
+    color: var(--muted);
+    font-size: 0.9rem;
+  }
+
+  .result-item .value {
+    font-weight: 600;
+    font-size: 1.02rem;
+  }
+
+  .total-box {
+    background: linear-gradient(135deg, #1e40af, #166534);
+    border-radius: 14px;
+    padding: 18px;
+    margin-top: 18px;
+    text-align: center;
+  }
+
+  .total-box .label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+  }
+
+  .total-box .amount {
+    font-size: 1.9rem;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .per-sft {
+    margin-top: 10px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #86efac;
+  }
+
+  .note {
+    font-size: 0.78rem;
+    color: var(--muted);
+    margin-top: 14px;
+    line-height: 1.5;
+  }
+
+  .badge {
+    display: inline-block;
+    background: rgba(34, 197, 94, 0.15);
+    color: #4ade80;
+    font-size: 0.72rem;
+    padding: 2px 7px;
+    border-radius: 20px;
+    margin-left: 6px;
+  }
+
+  .checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+    background: #0f172a;
+    padding: 12px 14px;
+    border-radius: 10px;
+    border: 1px solid var(--border);
+  }
+
+  .checkbox-group input {
+    width: auto;
+    accent-color: var(--primary);
+  }
+
+  .section-title {
+    font-size: 0.9rem;
+    color: #60a5fa;
+    margin: 18px 0 12px 0;
+    font-weight: 600;
+  }
+</style>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Tile Cost Calculator</h1>
+      <p>Professional Floor + Skirting Estimation Tool</p>
+    </header>
+
+    <div class="grid">
+      <!-- Input Section -->
+      <div class="card">
+        <h2><span></span> Input Details</h2>
+
+        <div class="form-group">
+          <label>Tile Type (Select)</label>
+          <select id="tileType" onchange="autoPrice()">
+            <option value="">-- Select Tile --</option>
+            <option value="120">Ceramic Floor Tile (120 ৳/sft)</option>
+            <option value="180">Porcelain Tile (180 ৳/sft)</option>
+            <option value="95">Vitrified Tile (95 ৳/sft)</option>
+            <option value="160">Homogeneous Tile (160 ৳/sft)</option>
+            <option value="250">Marble Look Tile (250 ৳/sft)</option>
+            <option value="320">Wooden Look Tile (320 ৳/sft)</option>
+            <option value="75">Wall Tile (75 ৳/sft)</option>
+            <option value="custom">Custom / Other</option>
+          </select>
+        </div>
+
+        <div class="form-group">
+          <label>Tile Price (৳ per sft) <span class="badge">Editable</span></label>
+          <input type="number" id="tilePrice" placeholder="Enter price" value="0" step="0.01">
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label>Room Length (ft)</label>
+            <input type="number" id="length" placeholder="e.g. 12" value="12" step="0.1" oninput="updatePerimeter()">
+          </div>
+          <div class="form-group">
+            <label>Room Width (ft)</label>
+            <input type="number" id="width" placeholder="e.g. 10" value="10" step="0.1" oninput="updatePerimeter()">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Perimeter (Auto Calculated)</label>
+          <input type="number" id="perimeter" value="44" readonly style="background:#1e293b; color:#94a3b8;">
+        </div>
+
+        <div class="form-group">
+          <label>Tile Size</label>
+          <select id="tileSize">
+            <option value="1">1 × 1 ft</option>
+            <option value="1.5">1.5 × 1.5 ft</option>
+            <option value="2" selected>2 × 2 ft</option>
+            <option value="2.5">2.5 × 2.5 ft</option>
+            <option value="3">3 × 3 ft</option>
+          </select>
+        </div>
+
+        <div class="section-title">Skirting Settings</div>
+
+        <div class="checkbox-group">
+          <input type="checkbox" id="includeSkirting" checked onchange="toggleSkirting()">
+          <label for="includeSkirting" style="margin:0; color:var(--text);">Include Skirting</label>
+        </div>
+
+        <div id="skirtingFields">
+          <div class="row">
+            <div class="form-group">
+              <label>Skirting Height (inch)</label>
+              <input type="number" id="skirtingHeight" value="4" step="0.5" min="2" max="12">
+            </div>
+            <div class="form-group">
+              <label>Skirting Tile Price (৳/sft)</label>
+              <input type="number" id="skirtingPrice" value="160" step="1">
+            </div>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Mortar Thickness (inch)</label>
+          <input type="number" id="mortarTh" value="0.5" step="0.1" min="0.2" max="2">
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label>Labour Cost (৳ / sft)</label>
+            <input type="number" id="labour" value="45" step="1">
+          </div>
+          <div class="form-group">
+            <label>Wastage (%)</label>
+            <input type="number" id="wastage" value="8" step="1" min="0" max="30">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="form-group">
+            <label>Cement Cost (৳ / bag)</label>
+            <input type="number" id="cementCost" value="520" step="10">
+          </div>
+          <div class="form-group">
+            <label>Sand Cost (৳ / cft)</label>
+            <input type="number" id="sandCost" value="45" step="1">
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label>Coating / Sealer Cost (৳ / sft)</label>
+          <input type="number" id="coatingCost" value="12" step="1">
+        </div>
+
+        <button class="btn" onclick="calculate()">Calculate Now</button>
+      </div>
+
+      <!-- Result Section -->
+      <div class="card">
+        <h2><span></span> Calculation Result</h2>
+
+        <div id="results">
+          <div class="result-item">
+            <span class="label">Total Floor Area</span>
+            <span class="value" id="rArea">0 sft</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Area with Wastage</span>
+            <span class="value" id="rAreaWaste">0 sft</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Number of Floor Tiles</span>
+            <span class="value" id="rTiles">0 pcs</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Floor Tile Cost</span>
+            <span class="value" id="rTileCost">৳ 0</span>
+          </div>
+
+          <div class="result-item" id="skirtingResult1">
+            <span class="label">Perimeter</span>
+            <span class="value" id="rPerimeter">0 ft</span>
+          </div>
+          <div class="result-item" id="skirtingResult2">
+            <span class="label">Skirting Area</span>
+            <span class="value" id="rSkirtingArea">0 sft</span>
+          </div>
+          <div class="result-item" id="skirtingResult3">
+            <span class="label">Skirting Tiles Needed</span>
+            <span class="value" id="rSkirtingTiles">0 pcs</span>
+          </div>
+          <div class="result-item" id="skirtingResult4">
+            <span class="label">Skirting Cost</span>
+            <span class="value" id="rSkirtingCost">৳ 0</span>
+          </div>
+
+          <div class="result-item">
+            <span class="label">Mortar Volume</span>
+            <span class="value" id="rMortarVol">0 cft</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Cement Required</span>
+            <span class="value" id="rCement">0 bags</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Sand Required</span>
+            <span class="value" id="rSand">0 cft</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Cement + Sand Cost</span>
+            <span class="value" id="rMortarCost">৳ 0</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Labour Cost</span>
+            <span class="value" id="rLabour">৳ 0</span>
+          </div>
+          <div class="result-item">
+            <span class="label">Coating Cost</span>
+            <span class="value" id="rCoating">৳ 0</span>
+          </div>
+
+          <div class="total-box">
+            <div class="label">Grand Total Cost</div>
+            <div class="amount" id="rTotal">৳ 0</div>
+            <div class="per-sft">Cost per sft: <span id="rPerSft">৳ 0</span></div>
+          </div>
+
+          <p class="note">
+            * Mortar ratio: 1:4 (Cement : Sand)<br>
+            * 1 bag cement ≈ 1.25 cft<br>
+            * Skirting height is converted to feet automatically<br>
+            * Cost per sft = Grand Total ÷ Floor Area<br>
+            * Prices are approximate — adjust as per local market
+          </p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+<script>
+  function autoPrice() {
+    const select = document.getElementById('tileType');
+    const priceInput = document.getElementById('tilePrice');
+    if (select.value && select.value !== 'custom') {
+      priceInput.value = select.value;
+      if (select.value == "160") {
+        document.getElementById('skirtingPrice').value = 160;
+      }
+    }
+  }
+
+  function updatePerimeter() {
+    const length = parseFloat(document.getElementById('length').value) || 0;
+    const width = parseFloat(document.getElementById('width').value) || 0;
+    const perimeter = 2 * (length + width);
+    document.getElementById('perimeter').value = perimeter.toFixed(2);
+  }
+
+  function toggleSkirting() {
+    const checked = document.getElementById('includeSkirting').checked;
+    document.getElementById('skirtingFields').style.display = checked ? 'block' : 'none';
+    
+    const display = checked ? 'flex' : 'none';
+    document.getElementById('skirtingResult1').style.display = display;
+    document.getElementById('skirtingResult2').style.display = display;
+    document.getElementById('skirtingResult3').style.display = display;
+    document.getElementById('skirtingResult4').style.display = display;
+  }
+
+  function calculate() {
+    const length = parseFloat(document.getElementById('length').value) || 0;
+    const width = parseFloat(document.getElementById('width').value) || 0;
+    const tilePrice = parseFloat(document.getElementById('tilePrice').value) || 0;
+    const tileSize = parseFloat(document.getElementById('tileSize').value) || 1;
+    const mortarThInch = parseFloat(document.getElementById('mortarTh').value) || 0.5;
+    const labourRate = parseFloat(document.getElementById('labour').value) || 0;
+    const wastage = parseFloat(document.getElementById('wastage').value) || 0;
+    const cementCost = parseFloat(document.getElementById('cementCost').value) || 0;
+    const sandCost = parseFloat(document.getElementById('sandCost').value) || 0;
+    const coatingRate = parseFloat(document.getElementById('coatingCost').value) || 0;
+
+    const includeSkirting = document.getElementById('includeSkirting').checked;
+    const skirtingHeightInch = parseFloat(document.getElementById('skirtingHeight').value) || 4;
+    const skirtingPrice = parseFloat(document.getElementById('skirtingPrice').value) || 0;
+
+    // Floor calculations
+    const area = length * width;
+    const areaWithWaste = area * (1 + wastage / 100);
+    const tilesNeeded = Math.ceil(areaWithWaste / (tileSize * tileSize));
+    const tileCost = areaWithWaste * tilePrice;
+
+    // Perimeter
+    const perimeter = 2 * (length + width);
+
+    // Skirting calculations
+    let skirtingArea = 0;
+    let skirtingTiles = 0;
+    let skirtingCost = 0;
+
+    if (includeSkirting) {
+      const skirtingHeightFt = skirtingHeightInch / 12;
+      skirtingArea = perimeter * skirtingHeightFt * (1 + wastage / 100);
+      skirtingTiles = Math.ceil(skirtingArea / (tileSize * tileSize));
+      skirtingCost = skirtingArea * skirtingPrice;
+    }
+
+    // Mortar volume
+    const mortarThFt = mortarThInch / 12;
+    const mortarVolume = area * mortarThFt;
+
+    // Cement : Sand = 1:4
+    const cementVolume = mortarVolume / 5;
+    const sandVolume = mortarVolume * 4 / 5;
+    const cementBags = Math.ceil(cementVolume / 1.25);
+    const mortarCost = (cementBags * cementCost) + (sandVolume * sandCost);
+
+    // Labour & Coating
+    const labourCost = area * labourRate;
+    const coatingCost = area * coatingRate;
+
+    // Grand Total
+    const grandTotal = tileCost + skirtingCost + mortarCost + labourCost + coatingCost;
+
+    // Cost per sft
+    const perSft = area > 0 ? grandTotal / area : 0;
+
+    // Display Results
+    document.getElementById('rArea').textContent = area.toFixed(2) + ' sft';
+    document.getElementById('rAreaWaste').textContent = areaWithWaste.toFixed(2) + ' sft';
+    document.getElementById('rTiles').textContent = tilesNeeded + ' pcs';
+    document.getElementById('rTileCost').textContent = '৳ ' + Math.round(tileCost).toLocaleString();
+
+    document.getElementById('rPerimeter').textContent = perimeter.toFixed(2) + ' ft';
+    document.getElementById('rSkirtingArea').textContent = skirtingArea.toFixed(2) + ' sft';
+    document.getElementById('rSkirtingTiles').textContent = skirtingTiles + ' pcs';
+    document.getElementById('rSkirtingCost').textContent = '৳ ' + Math.round(skirtingCost).toLocaleString();
+
+    document.getElementById('rMortarVol').textContent = mortarVolume.toFixed(2) + ' cft';
+    document.getElementById('rCement').textContent = cementBags + ' bags';
+    document.getElementById('rSand').textContent = sandVolume.toFixed(2) + ' cft';
+    document.getElementById('rMortarCost').textContent = '৳ ' + Math.round(mortarCost).toLocaleString();
+    document.getElementById('rLabour').textContent = '৳ ' + Math.round(labourCost).toLocaleString();
+    document.getElementById('rCoating').textContent = '৳ ' + Math.round(coatingCost).toLocaleString();
+    document.getElementById('rTotal').textContent = '৳ ' + Math.round(grandTotal).toLocaleString();
+    document.getElementById('rPerSft').textContent = '৳ ' + Math.round(perSft).toLocaleString();
+  }
+
+  // Initialize
+  window.onload = function() {
+    updatePerimeter();
+    calculate();
+  };
+</script>
+</body>
+  </html>
